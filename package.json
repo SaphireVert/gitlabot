@@ -1,0 +1,34 @@
+{
+  "name": "gitlabot",
+  "version": "0.0.1",
+  "description": "A gitlab update bot",
+  "main": "index.js",
+  "dependencies": {
+    "telebot": "^1.4.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "nodejs index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SaphireVert/gitlabot.git"
+  },
+  "keywords": [
+    "gitlab",
+    "bot",
+    "telegram",
+    "telebot",
+    "news",
+    "update",
+    "EPFL",
+    "saphirevert",
+    "pyrosaphire"
+  ],
+  "author": "SaphireVert",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SaphireVert/gitlabot/issues"
+  },
+  "homepage": "https://github.com/SaphireVert/gitlabot#readme"
+}
