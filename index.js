@@ -44,7 +44,9 @@ bot.on([/^\/last$/, /^\/last (.+)$/] , (msg, props) => {
             for(i=0;i<nbPage;i++) {
                 console.log(i);
                 msg.reply.text(result.feed.entry[i].title[0]);
-                msg.reply.text(result.feed.entry[i].author.name);
+                // msg.reply.text(result.feed.entry[i].author.name);
+                // msg.reply.text(result.feed.entry[i].link[0].href);
+                console.log(result.feed.entry[i].link[0].$.href);
             }
         });
     });
@@ -53,9 +55,9 @@ bot.on([/^\/last$/, /^\/last (.+)$/] , (msg, props) => {
 bot.on('/notify' , (msg) => msg.reply.text("Commands list:\n/start: Start the bot \n/help: Display the command list"));
 
 
-cron.schedule('* * * * * *', () => {
-  console.log('running a task every second');
-});
+// cron.schedule('* * * * * *', () => {
+//   console.log('running a task every second');
+// });
 
 couteauSuisse.test();
 // bot.on('/toto', toto(msg));
