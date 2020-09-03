@@ -7,7 +7,12 @@ class Utils {
 
     test() {
         // console.log(this.haha);
-        console.log("----------------------------");
+        // console.log("----------------------------");
+        var sentence = "Bonjour, le soleil est beau aujourd'hui";
+        var word = "beahfdu";
+        if(sentence.includes(word)){
+            console.log("oui !!!");
+        }
     }
 }
 
