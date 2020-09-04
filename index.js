@@ -70,7 +70,14 @@ bot.on([/^\/release$/, /^\/release (.+)$/] , (msg) => {
 //   console.log('running a task every second');
 // });
 
-couteauSuisse.test();
+// couteauSuisse.test();
+
+var result = couteauSuisse.getInfos(function (callback){
+    return callback("ehvd");
+});
+
+// console.dir(result);
+// console.log(result.feed.entry[i].title[0] + "\nAuthor: " + result.feed.entry[i].author[0].name[0] + "\n" + result.feed.entry[i].link[0].$.href);
 // bot.on('/toto', toto(msg));
 // test()
 
