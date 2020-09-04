@@ -24,6 +24,8 @@ class Utils {
               // console.log(body)
               return parseString(body, function (err, result) {
                   if (!err) {
+                      console.log("jdvxkfgidkjmfdkifsokl------------");
+                      console.log(result);
                       return result;
                   } else {
                       console.err(err);
@@ -35,7 +37,8 @@ class Utils {
 
     async getInfos () {
         let result = await this.request()
-        console.log(result)
+        // console.log(result)
+        return result;
     }
     async getInfosvdgd() {
         var result;

@@ -14,8 +14,6 @@ var parseString = require('xml2js').parseString;
 msg_sample = "totomsg";
 
 
-function getLast(){
-};
 
 function toto(msg){
     console.log("fidvhfidfgsiofo----------------------------------------");
@@ -58,29 +56,30 @@ bot.on([/^\/last$/, /^\/last (.+)$/] , (msg, props) => {
 bot.on('/notify' , (msg) => msg.reply.text("Commands list:\n/start: Start the bot \n/help: Display the command list"));
 
 
-bot.on([/^\/release$/, /^\/release (.+)$/] , (msg) => {
-    var sentence = "Bonjour, le soleil est beau aujourd'hui";
-    var word = "beauigf";
-    if(sentence.includes(word)){
-        console.log("oui !!!");
-    }
+bot.on([/^\/release$/, /^\/release (.+)$/] , async (msg) => {
+    // var sentence = "Bonjour, le soleil est beau aujourd'hui";
+    // var word = "beauigf";
+    // if(sentence.includes(word)){
+    //     console.log("oui !!!");
+    // }
+    var result = await couteauSuisse.getInfos();
+    console.dir(result);
+    // console.log(result.feed);
+    // title = result.feed.entry[0].title[0];
+    // if (title.includes("release")) {
+    //     msg.reply.text("yeah ! L'article contient release dans le titre !!!!!!!!!!")
+    // }
 });
 
-// cron.schedule('* * * * * *', () => {
-//   console.log('running a task every second');
-// });
 
 // couteauSuisse.test();
 
-var result = couteauSuisse.getInfos(function (callback){
-    return callback("ehvd");
-});
 
-// console.dir(result);
-// console.log(result.feed.entry[i].title[0] + "\nAuthor: " + result.feed.entry[i].author[0].name[0] + "\n" + result.feed.entry[i].link[0].$.href);
-// bot.on('/toto', toto(msg));
-// test()
 
-// toto(msg_sample);
 
 bot.start();
+
+
+// cron.schedule('* * * * * *', () => {
+    //   console.log('running a task every second');
+    // });
