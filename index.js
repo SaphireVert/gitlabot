@@ -43,10 +43,13 @@ bot.on([/^\/last$/, /^\/last (.+)$/] , (msg, props) => {
             // msg.reply.text(result.feed.entry[0].content[0]._);
             for(i=0;i<nbPage;i++) {
                 console.log(i);
-                msg.reply.text(result.feed.entry[i].title[0]);
+                msg.reply.text(result.feed.entry[i].title[0] + "\nAuthor: " + result.feed.entry[i].author[0].name[0] + "\n" + result.feed.entry[i].link[0].$.href);
+                // msg.reply.text(result.feed.entry[i].author[0].name[0]);
+                // msg.reply.text(result.feed.entry[i].link[0].$.href);
                 // msg.reply.text(result.feed.entry[i].author.name);
                 // msg.reply.text(result.feed.entry[i].link[0].href);
-                console.log(result.feed.entry[i].link[0].$.href);
+                // console.log(result.feed.entry[i].link[0].$.href);
+                // console.dir(result.feed.entry[i].author[0].name[0]);
             }
         });
     });
@@ -54,6 +57,14 @@ bot.on([/^\/last$/, /^\/last (.+)$/] , (msg, props) => {
 
 bot.on('/notify' , (msg) => msg.reply.text("Commands list:\n/start: Start the bot \n/help: Display the command list"));
 
+
+bot.on([/^\/release$/, /^\/release (.+)$/] , (msg) => {
+    var sentence = "Bonjour, le soleil est beau aujourd'hui";
+    var word = "beauigf";
+    if(sentence.includes(word)){
+        console.log("oui !!!");
+    }
+});
 
 // cron.schedule('* * * * * *', () => {
 //   console.log('running a task every second');
