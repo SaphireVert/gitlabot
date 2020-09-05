@@ -17,21 +17,25 @@ class Utils {
             console.log("oui !!!");
         }
     }
+    async xmlStringTojs(body){
+        return await parseString(body, function (err, result) {
+            if (!err) {
+                console.log("jdvxkfgidkjmfdkifsokl------------");
+                console.log(result);
+                return result;
+            } else {
+                // console.err(err);
+            }
+        });
+    }
+
     async request () {
         return await fetch('https://about.gitlab.com/atom.xml')
           .then(res => res.text())
-          .then(body => {
-              // console.log(body)
-              return parseString(body, function (err, result) {
-                  if (!err) {
-                      console.log("jdvxkfgidkjmfdkifsokl------------");
-                      console.log(result);
-                      return result;
-                  } else {
-                      console.err(err);
-                  }
-              });
-
+          .then(async body => {
+              var final = await this.xmlStringTojs(body);
+              console.log(final);
+              return final;
           })
     }
 
