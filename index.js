@@ -63,7 +63,7 @@ bot.on([/^\/release$/, /^\/release (.+)$/] , async (msg) => {
     //     console.log("oui !!!");
     // }
     var result = await couteauSuisse.getInfos();
-    console.dir(result);
+    // console.dir(result);
     // console.log(result.feed);
     // title = result.feed.entry[0].title[0];
     // if (title.includes("release")) {
