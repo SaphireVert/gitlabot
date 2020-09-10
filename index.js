@@ -90,47 +90,56 @@ bot.on([/^\/release$/, /^\/release (.+)$/] , async (msg, props) => {
 // });
 
 async function cronWork(){
-    console.log('running a task every second');
+    console.log('Function start');
     let check = await couteauSuisse.request();
     // check = check.feed.id[0]
     let tmpArray = [];
+    // Thanks to https://stackoverflow.com/a/19084915/13715020
     for (var i = 0; i < check.feed.entry.length; i++) {
-        tmpArray.push(check.feed.entry[i].id)
+        tmpArray.push(check.feed.entry[i].id[0])
     }
-    if (reference != tmpArray) {
-        // console.log(tmpArray);
-        reference = tmpArray;
-        console.log("Pas égal")
-    }
-    console.log(tmpArray);
-    console.log(reference);
+    // if (reference != tmpArray) {
+    //     // console.log(tmpArray);
+    //     reference = tmpArray;
+    //     console.log("Pas égal")
+    // }
+    // console.log(tmpArray);
+    // console.log(reference);
     console.log("Flux RSS mis à jour")
 
     // var reference = ["a","b","c"];
     // var check = ["a","b","c"];
-    if (reference.length != tmpArray.length
+    var diff = [];
+    // Thanks to https://stackoverflow.com/a/13523757/13715020
+    if (!(reference.length == tmpArray.length
         && reference.every(function(u, i) {
-            return u !== tmpArray[i];
+            return u === tmpArray[i];
         })
-    ) {
-       console.log(true);
-    } else {
-       console.log(false);
-    }
+    ))  {
+       console.log("Le fichier a changé");
+       // console.log(reference);
+       for (var i = 0; i < reference.length; i++) {
+           // const reference = [5, 12, 8, 130, 44, 10];
 
-    // console.log(check.feed.entry[].id)
-    // console.log("c'est à zero")
-    // const array1 = [5, 12, 8, 130, 44, 10];
-    //
-    // const found = array1.find(element => element == 10);
-    //
-    // console.log(found);
+           // if (tmpArray[i] != reference[i]) {
+           //     diff.push()
+           // }
+           var found = tmpArray.find(element => element == reference[i]);
+           if (!found) {
+               console.log("Nooooooooooon");
+               diff.push(tmpArray[i])
+           }
+           // console.log(found);
+           // diff.push(found)
+       }
+       console.log(diff);
+       // console.log(diff);
+       // reference = tmpArray;
+       reference = tmpArray;
+   }
+   console.log("End function");
 
-    // for (var i = 0; i < fichier_a_comparer; i++) {
-    //     const found = fichier_a_comparer.find(element => element > 10);
-    //     console.log(found);
-    // }
-
+    // Thanks to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
 
 }
 
@@ -139,24 +148,28 @@ cron.schedule('* * * * * *', () => {
 });
 
 
+reference = [ 'https://about.gitlab.com/blog/2020/09/10/cloud-native-storage-beginners/',
+  'https://about.gitlab.com/blog/2020/09/09/being-a-better-ally/',
+  'https://about.gitlab.com/blog/2020/09/08/gnome-follow-up/',
+  'https://about.gitlab.com/blog/2020/09/08/efficient-code-review-tips/',
+  'https://about.gitlab.com/releases/2020/09/04/gitlab-13-3-5-released/',
+  'https://about.gitlab.com/blog/2020/09/03/how-being-public-by-default-in-security-builds-trust/',
+  'https://about.gitlab.com/blog/2020/09/03/is-devops-for-designers/',
+  'https://about.gitlab.com/blog/2020/09/03/risk-mapping/',
+  'https://about.gitlab.com/blog/2020/09/02/imposter-syndrome-and-remote-work/',
+  'https://about.gitlab.com/releases/2020/09/02/security-release-gitlab-13-3-3-released/',
+  'https://about.gitlab.com/blog/2020/09/01/a-tale-of-two-editors/',
+  'https://about.gitlab.com/blog/2020/09/01/using-bazel-to-speed-up-gitlab-ci-builds/',
+  'https://about.gitlab.com/releases/2020/09/01/ci-minutes-update-free-users/',
+  'https://about.gitlab.com/blog/2020/08/31/how-to-configure-dast-full-scans-for-complex-web-applications/',
+  'https://about.gitlab.com/releases/2020/08/28/gitlab-13-3-2-released/',
+  'https://about.gitlab.com/blog/2020/08/27/applying-risk-management-to-remote-learning/',
+  'https://about.gitlab.com/blog/2020/08/27/measuring-engineering-productivity-at-gitlab/',
+  'https://about.gitlab.com/blog/2020/08/25/ten-devops-terms/',
+  'https://about.gitlab.com/releases/2020/08/25/gitlab-13-3-1-released/',
+  'https://about.gitlab.com/blog/2020/08/24/gitlab-achieves-kcsp-status/i',
+  'https://about.gitlab.com/releases/2020/08/22/gitlab-13-3-released/iiiiiiii' ]
 
-// var j = 0;
-// var result = await couteauSuisse.request();
-// forEach((result.feed.entry, entry) => {
-//     j++;
-//     console.log(j);
-//
-// });
-
-
-// couteauSuisse.test();
-
-
-// var sentence = "Bonjour, le soleil est beau aujourd'hui";
-// var word = "beauigf";
-// if(sentence.includes(word)){
-    //     console.log("oui !!!");
-    // }
 
 
 bot.start();
