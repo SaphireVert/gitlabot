@@ -14,6 +14,7 @@ var parseString = require('xml2js').parseString;
 msg_sample = "totomsg";
 var fichier_a_comparer = "";
 var reference = [];
+var diff = [];
 
 
 function toto(msg){
@@ -100,7 +101,6 @@ async function cronWork(){
     }
     console.log("Flux RSS mis à jour")
 
-    var diff = [];
     // Thanks to https://stackoverflow.com/a/13523757/13715020
     if (!(reference.length == tmpArray.length
         && reference.every(function(u, i) {
@@ -108,6 +108,7 @@ async function cronWork(){
         })
     ))  {
        console.log("Le fichier a changé");
+       diff = [];
        for (var i = 0; i < reference.length; i++) {
            // Thanks to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
            var found = tmpArray.find(element => element == reference[i]);
@@ -115,12 +116,12 @@ async function cronWork(){
                diff.push(tmpArray[i])
            }
        }
-       console.log(diff);
+       diff = diff.reverse();
        reference = tmpArray;
+       console.log(diff);
    }
+   // bot.sendMessage()
    console.log("End function");
-
-
 }
 
 cron.schedule('* * * * * *', () => {
@@ -128,27 +129,28 @@ cron.schedule('* * * * * *', () => {
 });
 
 
+
 reference = [ 'https://about.gitlab.com/blog/2020/09/10/cloud-native-storage-beginners/',
-  'https://about.gitlab.com/blog/2020/09/09/being-a-better-ally/',
-  'https://about.gitlab.com/blog/2020/09/08/gnome-follow-up/',
-  'https://about.gitlab.com/blog/2020/09/08/efficient-code-review-tips/',
-  'https://about.gitlab.com/releases/2020/09/04/gitlab-13-3-5-released/',
-  'https://about.gitlab.com/blog/2020/09/03/how-being-public-by-default-in-security-builds-trust/',
-  'https://about.gitlab.com/blog/2020/09/03/is-devops-for-designers/',
-  'https://about.gitlab.com/blog/2020/09/03/risk-mapping/',
-  'https://about.gitlab.com/blog/2020/09/02/imposter-syndrome-and-remote-work/',
-  'https://about.gitlab.com/releases/2020/09/02/security-release-gitlab-13-3-3-released/',
-  'https://about.gitlab.com/blog/2020/09/01/a-tale-of-two-editors/',
-  'https://about.gitlab.com/blog/2020/09/01/using-bazel-to-speed-up-gitlab-ci-builds/',
-  'https://about.gitlab.com/releases/2020/09/01/ci-minutes-update-free-users/',
-  'https://about.gitlab.com/blog/2020/08/31/how-to-configure-dast-full-scans-for-complex-web-applications/',
-  'https://about.gitlab.com/releases/2020/08/28/gitlab-13-3-2-released/',
-  'https://about.gitlab.com/blog/2020/08/27/applying-risk-management-to-remote-learning/',
-  'https://about.gitlab.com/blog/2020/08/27/measuring-engineering-productivity-at-gitlab/',
-  'https://about.gitlab.com/blog/2020/08/25/ten-devops-terms/',
-  'https://about.gitlab.com/releases/2020/08/25/gitlab-13-3-1-released/',
-  'https://about.gitlab.com/blog/2020/08/24/gitlab-achieves-kcsp-status/i',
-  'https://about.gitlab.com/releases/2020/08/22/gitlab-13-3-released/iiiiiiii' ]
+              'https://about.gitlab.com/blog/2020/09/09/being-a-better-ally/',
+              'https://about.gitlab.com/blog/2020/09/08/gnome-follow-up/',
+              'https://about.gitlab.com/blog/2020/09/08/efficient-code-review-tips/',
+              'https://about.gitlab.com/releases/2020/09/04/gitlab-13-3-5-released/',
+              'https://about.gitlab.com/blog/2020/09/03/how-being-public-by-default-in-security-builds-trust/',
+              'https://about.gitlab.com/blog/2020/09/03/is-devops-for-designers/',
+              'https://about.gitlab.com/blog/2020/09/03/risk-mapping/',
+              'https://about.gitlab.com/blog/2020/09/02/imposter-syndrome-and-remote-work/',
+              'https://about.gitlab.com/releases/2020/09/02/security-release-gitlab-13-3-3-released/',
+              'https://about.gitlab.com/blog/2020/09/01/a-tale-of-two-editors/',
+              'https://about.gitlab.com/blog/2020/09/01/using-bazel-to-speed-up-gitlab-ci-builds/',
+              'https://about.gitlab.com/releases/2020/09/01/ci-minutes-update-free-users/',
+              'https://about.gitlab.com/blog/2020/08/31/how-to-configure-dast-full-scans-for-complex-web-applications/',
+              'https://about.gitlab.com/releases/2020/08/28/gitlab-13-3-2-released/',
+              'https://about.gitlab.com/blog/2020/08/27/applying-risk-management-to-remote-learning/',
+              'https://about.gitlab.com/blog/2020/08/27/measuring-engineering-productivity-at-gitlab/',
+              'https://about.gitlab.com/blog/2020/08/25/ten-devops-terms/',
+              'https://about.gitlab.com/releases/2020/08/25/gitlab-13-3-1-released/',
+              'https://about.gitlab.com/blog/2020/08/24/gitlab-achieves-kcsp-status/i',
+              'https://about.gitlab.com/releases/2020/08/22/gitlab-13-3-released/iiiiiiii' ]
 
 
 
