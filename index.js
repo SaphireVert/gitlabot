@@ -98,17 +98,8 @@ async function cronWork(){
     for (var i = 0; i < check.feed.entry.length; i++) {
         tmpArray.push(check.feed.entry[i].id[0])
     }
-    // if (reference != tmpArray) {
-    //     // console.log(tmpArray);
-    //     reference = tmpArray;
-    //     console.log("Pas égal")
-    // }
-    // console.log(tmpArray);
-    // console.log(reference);
     console.log("Flux RSS mis à jour")
 
-    // var reference = ["a","b","c"];
-    // var check = ["a","b","c"];
     var diff = [];
     // Thanks to https://stackoverflow.com/a/13523757/13715020
     if (!(reference.length == tmpArray.length
@@ -117,29 +108,18 @@ async function cronWork(){
         })
     ))  {
        console.log("Le fichier a changé");
-       // console.log(reference);
        for (var i = 0; i < reference.length; i++) {
-           // const reference = [5, 12, 8, 130, 44, 10];
-
-           // if (tmpArray[i] != reference[i]) {
-           //     diff.push()
-           // }
+           // Thanks to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
            var found = tmpArray.find(element => element == reference[i]);
            if (!found) {
-               console.log("Nooooooooooon");
                diff.push(tmpArray[i])
            }
-           // console.log(found);
-           // diff.push(found)
        }
        console.log(diff);
-       // console.log(diff);
-       // reference = tmpArray;
        reference = tmpArray;
    }
    console.log("End function");
 
-    // Thanks to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
 
 }
 
