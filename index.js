@@ -94,17 +94,29 @@ async function cronWork(){
     let check = await couteauSuisse.request();
     // check = check.feed.id[0]
     let tmpArray = [];
-    if (reference != check) {
-        for (var i = 0; i < check.feed.entry.length; i++) {
-            tmpArray.push(check.feed.entry[i].id)
-        }
-        console.log(tmpArray);
-        reference = tmpArray;
+    for (var i = 0; i < check.feed.entry.length; i++) {
+        tmpArray.push(check.feed.entry[i].id)
     }
+    if (reference != tmpArray) {
+        // console.log(tmpArray);
+        reference = tmpArray;
+        console.log("Pas égal")
+    }
+    console.log(tmpArray);
+    console.log(reference);
     console.log("Flux RSS mis à jour")
-    if (fichier_a_comparer != check) {
 
-
+    // var reference = ["a","b","c"];
+    // var check = ["a","b","c"];
+    if (reference.length != tmpArray.length
+        && reference.every(function(u, i) {
+            return u !== tmpArray[i];
+        })
+    ) {
+       console.log(true);
+    } else {
+       console.log(false);
+    }
 
     // console.log(check.feed.entry[].id)
     // console.log("c'est à zero")
@@ -120,7 +132,6 @@ async function cronWork(){
     // }
 
 
-    }
 }
 
 cron.schedule('* * * * * *', () => {
