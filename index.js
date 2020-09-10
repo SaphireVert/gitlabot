@@ -13,7 +13,7 @@ const fetch = require('node-fetch');
 var parseString = require('xml2js').parseString;
 msg_sample = "totomsg";
 var fichier_a_comparer = "";
-var compteur = 0;
+var reference = [];
 
 
 function toto(msg){
@@ -93,16 +93,20 @@ async function cronWork(){
     console.log('running a task every second');
     let check = await couteauSuisse.request();
     // check = check.feed.id[0]
-    fichier_a_comparer = check
-
-
-    for (var i = 0; i < check.feed.entry.length; i++) {
-        console.log(check.feed.entry[i].id);
+    let tmpArray = [];
+    if (reference != check) {
+        for (var i = 0; i < check.feed.entry.length; i++) {
+            tmpArray.push(check.feed.entry[i].id)
+        }
+        console.log(tmpArray);
+        reference = tmpArray;
     }
+    console.log("Flux RSS mis à jour")
+    if (fichier_a_comparer != check) {
+
+
+
     // console.log(check.feed.entry[].id)
-
-
-
     // console.log("c'est à zero")
     // const array1 = [5, 12, 8, 130, 44, 10];
     //
@@ -114,11 +118,7 @@ async function cronWork(){
     //     const found = fichier_a_comparer.find(element => element > 10);
     //     console.log(found);
     // }
-    compteur++
 
-    fichier_a_comparer = check;
-    console.log("Flux RSS mis à jour")
-    if (fichier_a_comparer != check) {
 
     }
 }
