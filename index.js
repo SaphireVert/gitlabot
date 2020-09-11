@@ -114,12 +114,12 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
 */
 async function cronWork() {
   console.log('Function start')
-  let check = await couteauSuisse.request()
-  // check = check.feed.id[0]
+  let lastxml = await couteauSuisse.request()
+  // lastxml = lastxml.feed.id[0]
   let tmpArray = []
   // Thanks to https://stackoverflow.com/a/19084915/13715020
-  for (var i = 0; i < check.feed.entry.length; i++) {
-    tmpArray.push(check.feed.entry[i].id[0])
+  for (var i = 0; i < lastxml.feed.entry.length; i++) {
+    tmpArray.push(lastxml.feed.entry[i].id[0])
   }
   console.log('Flux RSS mis à jour')
 
