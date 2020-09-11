@@ -33,5 +33,13 @@
   "bugs": {
     "url": "https://github.com/SaphireVert/gitlabot/issues"
   },
-  "homepage": "https://github.com/SaphireVert/gitlabot#readme"
+  "homepage": "https://github.com/SaphireVert/gitlabot#readme",
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 100
+  }
 }
+
