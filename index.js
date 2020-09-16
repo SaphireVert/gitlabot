@@ -18,21 +18,33 @@ bot.on('/help', (msg) =>
   msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list')
 )
 
-bot.on([/^\/last$/, /^\/last (.+)$/], function test(msg, props) {
+bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
   var nbPage
   if (typeof props.match[1] === 'undefined') {
     nbPage = 1
   } else {
     nbPage = Number(props.match[1])
   }
+  if (lastxml.length == 0){
+      await msg.reply.text('No recent results found')
+  }
+  let yesOrNo = false
+  if (nbPage > lastxml.feed.entry.length) {
+      nbPage = lastxml.feed.entry.length
+      yesOrNo = true
+  }
+  console.log(nbPage);
   for (i = 0; i < nbPage; i++) {
-    msg.reply.text(
-      lastxml.feed.entry[i].title[0] +
-        '\nAuthor: ' +
-        lastxml.feed.entry[i].author[0].name[0] +
-        '\n' +
-        lastxml.feed.entry[i].link[0].$.href
-    )
+      await msg.reply.text(
+          lastxml.feed.entry[i].title[0] +
+          '\nAuthor: ' +
+          lastxml.feed.entry[i].author[0].name[0] +
+          '\n' +
+          lastxml.feed.entry[i].link[0].$.href
+      )
+  }
+  if (yesOrNo == true) {
+      msg.reply.text(lastxml.feed.entry.length + ' results founds')
   }
 })
 
