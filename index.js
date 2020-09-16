@@ -15,10 +15,8 @@ msg_sample = 'totomsg'
 var fichier_a_comparer = ''
 var reference = []
 var diff = []
+var lastxml = []
 
-function toto(msg) {
-  console.log('fidvhfidfgsiofo----------------------------------------')
-}
 
 async function getResults() {
   return await couteauSuisse.request()
@@ -114,7 +112,7 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
 */
 async function cronWork() {
   console.log('Function start')
-  let lastxml = await couteauSuisse.request()
+  lastxml = await couteauSuisse.request()
   // lastxml = lastxml.feed.id[0]
   let tmpArray = []
   // Thanks to https://stackoverflow.com/a/19084915/13715020
