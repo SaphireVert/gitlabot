@@ -46,8 +46,6 @@ bot.on('/notify', (msg) =>
 )
 
 bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
-  // console.log(msg);
-  console.log('oui !!!')
   var nbPage
   if (typeof props.match[1] === 'undefined') {
     nbPage = 1
@@ -57,10 +55,9 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
   var entries = []
   let compteur = 0;
   for (let i = 0; compteur < nbPage && i < lastxml.feed.entry.length; i++) {
-      var sentence = lastxml.feed.entry[i].title[0]
-      var word = 'elease'
-      if (sentence.includes(word)) {
-          console.log('oui !!!')
+      var sentence = lastxml.feed.entry[i].title[0].toLowerCase()
+      var word = 'Release'
+      if (sentence.includes(word.toLowerCase())) {
           compteur++;
           entries.push(i)
       }
@@ -76,9 +73,9 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
       )
   }
   if (compteur == 0) {
-      msg.reply.text("No recent release found")
+      msg.reply.text("No recent results found")
   } else if (compteur < nbPage) {
-      msg.reply.text(compteur + " results displayed")
+      msg.reply.text(compteur + " results founds")
   }
 })
 
