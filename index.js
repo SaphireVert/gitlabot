@@ -54,6 +54,7 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
   } else {
     nbPage = Number(props.match[1])
   }
+  var entries = []
   let compteur = 0;
   for (let i = 0; compteur < nbPage && i < lastxml.feed.entry.length; i++) {
       var sentence = lastxml.feed.entry[i].title[0]
@@ -61,16 +62,19 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
       if (sentence.includes(word)) {
           console.log('oui !!!')
           compteur++;
-          msg.reply.text(
-              lastxml.feed.entry[i].title +
-              '\nAuthor: ' +
-              lastxml.feed.entry[i].author[0].name[0] +
-              '\n' +
-              lastxml.feed.entry[i].link[0].$.href
-          )
+          entries.push(i)
       }
   }
-  console.log(compteur);
+  console.log(entries);
+  for (var i = 0; i < entries.length; i++) {
+      await msg.reply.text(
+          lastxml.feed.entry[entries[i]].title +
+          '\nAuthor: ' +
+          lastxml.feed.entry[i].author[0].name[0] +
+          '\n' +
+          lastxml.feed.entry[i].link[0].$.href
+      )
+  }
   if (compteur == 0) {
       msg.reply.text("No recent release found")
   } else if (compteur < nbPage) {
