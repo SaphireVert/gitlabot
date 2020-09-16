@@ -12,15 +12,12 @@ const bot = new TeleBot(BOT_TOKEN)
 const fetch = require('node-fetch')
 var parseString = require('xml2js').parseString
 var lastxml = []
-// var tmp_msg_sample = fs.readFileSync('./msg_sample.json')
-// msg_sample = JSON.parse(tmp_msg_sample)
-// console.log(msg_sample);
 
 bot.on('/start', (msg) => msg.reply.text('Welcome to gitlabot ! Type /help to get some help.'))
 bot.on('/help', (msg) =>
   msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list')
 )
-// bot.on('/last' , (msg) => {
+
 bot.on([/^\/last$/, /^\/last (.+)$/], function test(msg, props) {
   var nbPage
   if (typeof props.match[1] === 'undefined') {
