@@ -41,10 +41,6 @@ class Utils {
 class Message extends TeleBot {
     constructor(cfg) {
         super(cfg)
-        // this.cfg = cfg
-    }
-    _sendMessage(){
-
     }
 }
 
