@@ -1,0 +1,17 @@
+{
+    "user_settings": {
+              "USER_ID": {
+                  "user_id":     "USER_ID",
+                  "username":    "USERNAME",
+                  "firstname":   "FIRSTNAME",
+                  "lastname":    "LASTNAME",
+                  "preferences": {
+                      "notify":{
+                          "is_notif_ena": "bool",
+                          "value_notify": "value",
+                          "last_send_id": "url"
+                      }
+                  }
+              }
+    }
+}
