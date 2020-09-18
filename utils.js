@@ -40,14 +40,16 @@ class Utils {
 
 class Message extends TeleBot {
     constructor(cfg) {
-        super()
+        super(cfg)
         // this.cfg = cfg
     }
-    sendMessage(){
-        console.log("oui");
+    _sendMessage(){
+
     }
 }
 
 
-module.exports = Utils;
-module.exports = Message;
+module.exports = {
+    Utils: Utils,
+    Message: Message
+};
