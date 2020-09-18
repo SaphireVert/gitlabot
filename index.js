@@ -8,9 +8,9 @@ const BOT_TOKEN = secretsFileObj.BOT_TOKEN
 const http = require('http')
 const https = require('https')
 const Utils = require('./utils.js')
-const couteauSuisse = new Utils()
+const couteauSuisse = new Utils.Utils()
 const Message = require('./utils.js')
-const testHeritage = new Message(BOT_TOKEN)
+const bot = new Utils.Message(BOT_TOKEN)
 const fetch = require('node-fetch')
 var parseString = require('xml2js').parseString
 var lastxml = []
@@ -28,7 +28,8 @@ bot.on('/help', (msg) => {
   // msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')) +
   let text = 'Commands list:\n/start: Start the bot \n/help: Display the command list\n'
   couteauSuisse.replyText(text, msg)
-  testHeritage.reply.text("test")
+  // msg.reply.text("text" + '\n' + "isoDate")
+  // msg.reply.text("test")
 })
 bot.on('/settings', (msg) => {
   let text =
