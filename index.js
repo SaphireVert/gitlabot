@@ -19,54 +19,78 @@ function user_settings(user_id) {
     let tmp_users_settings = JSON.parse(fs.readFileSync('./users_settings.json', 'utf-8'))
     return tmp_users_settings.user_settings[user_id]
 }
+function getDate() {
+
+    return new Date().toLocaleString().replace(/T/, ' ').replace(/\..+/, '')
+}
 
 // console.debug(users_settings.user_settings[976140946].username)
 // console.debug(user_settings(sample_id).preferences.notify.is_notif_ena)
 
-bot.on('/start', (msg) => msg.reply.text('Welcome to gitlabot ! Type /help to get some help.\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')))
-bot.on('/help', (msg) => {
-  // msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')) +
-  let text = 'Commands list:\n/start: Start the bot \n/help: Display the command list\n'
-  couteauSuisse.replyText(text, msg)
-  // msg.reply.text("text" + '\n' + "isoDate")
-  // msg.reply.text("test")
+bot.on('/start', (msg) => {
+    let text = 'Welcome to gitlabot ! Type /help to get some help.'
+    msg.reply.text(text)
 })
-bot.on('/settings', (msg) => {
-  let text =
-      "Notifications:\n" +
-      "Push notifications: " + (user_settings(sample_id).preferences.notify.is_notif_ena == "true" ? "enabled" : "disabled") + "\n" +
-      "Frequency: " + user_settings(sample_id).preferences.notify.value_notify + '\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+bot.on('/help', (msg) => {
+    // msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')) +
+    let text = 'Commands list:\n/start: Start the bot \n/help: Display the command list\n'
+    msg.reply.text(text + getDate())
+})
+bot.on('/settings', async (msg) => {
+    let text =
+        'Notifications:\n' +
+        'Push notifications: ' +
+        (user_settings(sample_id).preferences.notify.is_notif_ena == 'true'
+            ? 'enabled'
+            : 'disabled') +
+        '\n' +
+        'Frequency: ' +
+        user_settings(sample_id).preferences.notify.value_notify
+    await msg.reply.text(text + getDate())
 })
 
 bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
-  var nbPage
-  if (typeof props.match[1] === 'undefined') {
-    nbPage = 1
-  } else {
-    nbPage = Number(props.match[1])
-  }
-  if (lastxml.length == 0){
-      await msg.reply.text('No recent results found\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''))
-  }
-  let yesOrNo = false
-  if (nbPage > lastxml.feed.entry.length) {
-      nbPage = lastxml.feed.entry.length
-      yesOrNo = true
-  }
-  console.log(nbPage);
-  for (i = 0; i < nbPage; i++) {
-      await msg.reply.text(
-          lastxml.feed.entry[i].title[0] +
-          '\nAuthor: ' +
-          lastxml.feed.entry[i].author[0].name[0] +
-          '\n' +
-          lastxml.feed.entry[i].link[0].$.href +
-          '\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-      )
-  }
-  if (yesOrNo == true) {
-      msg.reply.text(lastxml.feed.entry.length + ' results founds\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''))
-  }
+    var nbPage
+    if (typeof props.match[1] === 'undefined') {
+        nbPage = 1
+    } else {
+        nbPage = Number(props.match[1])
+    }
+    try {
+        let test = lastxml.feed.entry
+    } catch (error) {
+        // console.error(error)
+        console.log(msg.text + ": No entry found");
+        lastxml.feed = {entry:[]}
+    }
+        let yesOrNo = false
+        if (lastxml.feed.entry.length) {
+            if (nbPage > lastxml.feed.entry.length) {
+                nbPage = lastxml.feed.entry.length
+                yesOrNo = true
+            }
+
+        for (i = 0; i < nbPage; i++) {
+            let text = lastxml.feed.entry[i].title[0] +
+                        '\nAuthor: ' +
+                        lastxml.feed.entry[i].author[0].name[0] +
+                        '\n' +
+                        lastxml.feed.entry[i].link[0].$.href +
+                        '\n' +
+                        new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+            await msg.reply.text(text)
+        }
+        if (yesOrNo == true) {
+            let text =
+                lastxml.feed.entry.length +
+                    ' results founds\n' +
+                    new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+            msg.reply.text(text)
+        }
+    } else {
+        let text = 'No recent results found'
+        await msg.reply.text(text + getDate())
+    }
 })
 
 // bot.on('/notify', (msg) =>
@@ -74,46 +98,54 @@ bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
 // )
 
 bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
-  var nbPage
-  if (typeof props.match[1] === 'undefined') {
-    nbPage = 1
-  } else {
-    nbPage = Number(props.match[1])
-  }
-  var entries = []
-  let compteur = 0
-  for (let i = 0; compteur < nbPage && i < lastxml.feed.entry.length; i++) {
-    var sentence = lastxml.feed.entry[i].title[0].toLowerCase()
-    var word = 'Release'
-    if (sentence.includes(word.toLowerCase())) {
-      compteur++
-      entries.push(i)
+    var nbPage
+    if (typeof props.match[1] === 'undefined') {
+        nbPage = 1
+    } else {
+        nbPage = Number(props.match[1])
     }
-  }
-  console.log(entries)
-  for (var i = 0; i < entries.length; i++) {
-    await msg.reply.text(
-      lastxml.feed.entry[entries[i]].title +
-        '\nAuthor: ' +
-        lastxml.feed.entry[i].author[0].name[0] +
-        '\n' +
-        lastxml.feed.entry[i].link[0].$.href +
-        '\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-    )
-  }
-  if (compteur == 0) {
-    msg.reply.text('No recent results found\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''))
-  } else if (compteur < nbPage) {
-    msg.reply.text(compteur + ' results found\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''))
-  }
+    var entries = []
+    let compteur = 0
+    for (let i = 0; compteur < nbPage && i < lastxml.feed.entry.length; i++) {
+        var sentence = lastxml.feed.entry[i].title[0].toLowerCase()
+        var word = 'Release'
+        if (sentence.includes(word.toLowerCase())) {
+            compteur++
+            entries.push(i)
+        }
+    }
+    for (var i = 0; i < entries.length; i++) {
+        let text =
+            lastxml.feed.entry[entries[i]].title +
+            '\nAuthor: ' +
+            lastxml.feed.entry[i].author[0].name[0] +
+            '\n' +
+            lastxml.feed.entry[i].link[0].$.href +
+            '\n' +
+            new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+
+        await msg.reply.text(text)
+    }
+    if (compteur == 0) {
+        msg.reply.text(
+            'No recent results found\n' +
+                new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+        )
+    } else if (compteur < nbPage) {
+        msg.reply.text(
+            compteur +
+                ' results found\n' +
+                new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+        )
+    }
 })
 
 bot.on([/^\/notify$/, /^\/notify (.+)$/], async (msg, props) => {
     var valueNotify
     if (typeof props.match[1] === 'undefined') {
-      valueNotify = "auto"
+        valueNotify = 'auto'
     } else {
-      valueNotify = props.match[1]
+        valueNotify = props.match[1]
     }
     let file = require('./users_settings.json')
     // file.user_settings[976140946].preferences.notify.is_notif_ena = (user_settings(sample_id).preferences.notify.is_notif_ena == "true" ? "false" : "true")
@@ -122,8 +154,16 @@ bot.on([/^\/notify$/, /^\/notify (.+)$/], async (msg, props) => {
     fs.writeFile('./users_settings.json', JSON.stringify(file, null, 2), function writeJSON(err) {})
 })
 
-cron.schedule('* * * * * *', async () => {
-  lastxml = await couteauSuisse.request()
+async function updateXML(){
+    lastxml = await couteauSuisse.request()
+    console.log('[' + getDate() + ']' + '[bot.info] XML file has been updated ');
+}
+
+cron.schedule('*/12 * * * *', async () => {
+    updateXML()
+    // console.log('[bot.info] XML file updated' + getDate());
 })
+
+updateXML()
 
 bot.start()
