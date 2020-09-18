@@ -1,14 +1,16 @@
 var cron = require('node-cron')
 const fs = require('fs')
+var secretsFile = fs.readFileSync('./secrets.json', 'utf-8')
+const secretsFileObj = JSON.parse(secretsFile)
+const BOT_TOKEN = secretsFileObj.BOT_TOKEN
+// const TeleBot = require('telebot')
+// const bot = new TeleBot(BOT_TOKEN)
 const http = require('http')
 const https = require('https')
 const Utils = require('./utils.js')
 const couteauSuisse = new Utils()
-var secretsFile = fs.readFileSync('./secrets.json', 'utf-8')
-const secretsFileObj = JSON.parse(secretsFile)
-const BOT_TOKEN = secretsFileObj.BOT_TOKEN
-const TeleBot = require('telebot')
-const bot = new TeleBot(BOT_TOKEN)
+const Message = require('./utils.js')
+const testHeritage = new Message(BOT_TOKEN)
 const fetch = require('node-fetch')
 var parseString = require('xml2js').parseString
 var lastxml = []
@@ -22,16 +24,18 @@ function user_settings(user_id) {
 // console.debug(user_settings(sample_id).preferences.notify.is_notif_ena)
 
 bot.on('/start', (msg) => msg.reply.text('Welcome to gitlabot ! Type /help to get some help.\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')))
-bot.on('/help', (msg) =>
-  msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''))
-)
-bot.on('/settings', (msg) =>
-  msg.reply.text(
+bot.on('/help', (msg) => {
+  // msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')) +
+  let text = 'Commands list:\n/start: Start the bot \n/help: Display the command list\n'
+  couteauSuisse.replyText(text, msg)
+  testHeritage.reply.text("test")
+})
+bot.on('/settings', (msg) => {
+  let text =
       "Notifications:\n" +
       "Push notifications: " + (user_settings(sample_id).preferences.notify.is_notif_ena == "true" ? "enabled" : "disabled") + "\n" +
       "Frequency: " + user_settings(sample_id).preferences.notify.value_notify + '\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-  )
-)
+})
 
 bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
   var nbPage
