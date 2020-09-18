@@ -12,10 +12,25 @@ const bot = new TeleBot(BOT_TOKEN)
 const fetch = require('node-fetch')
 var parseString = require('xml2js').parseString
 var lastxml = []
+var sample_id = JSON.parse(fs.readFileSync('./users_settings.json', 'utf-8')).sample_id
+function user_settings(user_id) {
+    let tmp_users_settings = JSON.parse(fs.readFileSync('./users_settings.json', 'utf-8'))
+    return tmp_users_settings.user_settings[user_id]
+}
 
-bot.on('/start', (msg) => msg.reply.text('Welcome to gitlabot ! Type /help to get some help.'))
+// console.debug(users_settings.user_settings[976140946].username)
+// console.debug(user_settings(sample_id).preferences.notify.is_notif_ena)
+
+bot.on('/start', (msg) => msg.reply.text('Welcome to gitlabot ! Type /help to get some help.\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')))
 bot.on('/help', (msg) =>
-  msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list')
+  msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''))
+)
+bot.on('/settings', (msg) =>
+  msg.reply.text(
+      "Notifications:\n" +
+      "Push notifications: " + (user_settings(sample_id).preferences.notify.is_notif_ena == "true" ? "enabled" : "disabled") + "\n" +
+      "Frequency: " + user_settings(sample_id).preferences.notify.value_notify + '\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+  )
 )
 
 bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
@@ -26,7 +41,7 @@ bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
     nbPage = Number(props.match[1])
   }
   if (lastxml.length == 0){
-      await msg.reply.text('No recent results found')
+      await msg.reply.text('No recent results found\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''))
   }
   let yesOrNo = false
   if (nbPage > lastxml.feed.entry.length) {
@@ -40,17 +55,18 @@ bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
           '\nAuthor: ' +
           lastxml.feed.entry[i].author[0].name[0] +
           '\n' +
-          lastxml.feed.entry[i].link[0].$.href
+          lastxml.feed.entry[i].link[0].$.href +
+          '\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
       )
   }
   if (yesOrNo == true) {
-      msg.reply.text(lastxml.feed.entry.length + ' results founds')
+      msg.reply.text(lastxml.feed.entry.length + ' results founds\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''))
   }
 })
 
-bot.on('/notify', (msg) =>
-  msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list')
-)
+// bot.on('/notify', (msg) =>
+//   msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list')
+// )
 
 bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
   var nbPage
@@ -76,14 +92,29 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
         '\nAuthor: ' +
         lastxml.feed.entry[i].author[0].name[0] +
         '\n' +
-        lastxml.feed.entry[i].link[0].$.href
+        lastxml.feed.entry[i].link[0].$.href +
+        '\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
     )
   }
   if (compteur == 0) {
-    msg.reply.text('No recent results found')
+    msg.reply.text('No recent results found\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''))
   } else if (compteur < nbPage) {
-    msg.reply.text(compteur + ' results founds')
+    msg.reply.text(compteur + ' results found\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''))
   }
+})
+
+bot.on([/^\/notify$/, /^\/notify (.+)$/], async (msg, props) => {
+    var valueNotify
+    if (typeof props.match[1] === 'undefined') {
+      valueNotify = "auto"
+    } else {
+      valueNotify = props.match[1]
+    }
+    let file = require('./users_settings.json')
+    // file.user_settings[976140946].preferences.notify.is_notif_ena = (user_settings(sample_id).preferences.notify.is_notif_ena == "true" ? "false" : "true")
+    file.user_settings[976140946].preferences.notify.value_notify = valueNotify
+    // console.debug(file.user_settings[976140946].preferences)
+    fs.writeFile('./users_settings.json', JSON.stringify(file, null, 2), function writeJSON(err) {})
 })
 
 cron.schedule('* * * * * *', async () => {
