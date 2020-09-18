@@ -11,7 +11,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "nodejs index.js"
+    "start": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -42,4 +42,3 @@
     "printWidth": 100
   }
 }
-

@@ -69,6 +69,7 @@ npm start
     * 💡 Add buttons to choose the type ?
     * 💡 /release, /culture, etc.
   * User should be able to choose when to receive notification :
+     * `/notify off` disable notifications
      * `/notify auto` get the notification as soon as the server gets it
      * `/notify daily 08:00` user get all the *new* notifications that have
         appeared since the last one
@@ -81,6 +82,7 @@ npm start
      users preference
    * Other use case: what if a user want to have the new release notification as
      soon as possible but want a weekly digest of security and engineering posts ?
+   * /research ?
 
 
 <!-- MARKDOWN LINKS & IMAGES -->

@@ -1,3 +1,7 @@
 secrets.json
 node_modules
 msg_sample.json
+users_settings.json
+users_setting*
+.tern-project
+test.js
