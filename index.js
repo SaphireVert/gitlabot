@@ -3,8 +3,6 @@ const fs = require('fs')
 var secretsFile = fs.readFileSync('./secrets.json', 'utf-8')
 const secretsFileObj = JSON.parse(secretsFile)
 const BOT_TOKEN = secretsFileObj.BOT_TOKEN
-// const TeleBot = require('telebot')
-// const bot = new TeleBot(BOT_TOKEN)
 const http = require('http')
 const https = require('https')
 const Utils = require('./utils.js')
@@ -76,16 +74,14 @@ bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
                         lastxml.feed.entry[i].author[0].name[0] +
                         '\n' +
                         lastxml.feed.entry[i].link[0].$.href +
-                        '\n' +
-                        new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-            await msg.reply.text(text)
+                        '\n'
+            await msg.reply.text(text + getDate())
         }
         if (yesOrNo == true) {
             let text =
                 lastxml.feed.entry.length +
-                    ' results founds\n' +
-                    new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-            msg.reply.text(text)
+                    ' results founds\n'
+            msg.reply.text(text + getDate())
         }
     } else {
         let text = 'No recent results found'
@@ -121,22 +117,16 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
             lastxml.feed.entry[i].author[0].name[0] +
             '\n' +
             lastxml.feed.entry[i].link[0].$.href +
-            '\n' +
-            new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-
-        await msg.reply.text(text)
+            '\n'
+        await msg.reply.text(text + getDate())
     }
     if (compteur == 0) {
-        msg.reply.text(
-            'No recent results found\n' +
-                new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-        )
+        let text = 'No recent results found\n'
+        msg.reply.text(text + getDate())
     } else if (compteur < nbPage) {
-        msg.reply.text(
-            compteur +
-                ' results found\n' +
-                new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-        )
+            let text = compteur +
+                ' results found\n'
+        msg.reply.text(text + getDate())
     }
 })
 
