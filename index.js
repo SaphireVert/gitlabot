@@ -8,7 +8,8 @@ const bot = new Utils.Message(BOT_TOKEN)
 var user = new Utils.Users_Settings('./users_settings.json')
 var parseString = require('xml2js').parseString
 var lastxml = []
-atomfile = []
+var lastxml = []
+var currentxml = []
 // function user_settings(user_id) {
 //     let tmp_users_settings = require('./users_settings.json')
 //     return tmp_users_settings.user_settings[user_id]
@@ -28,10 +29,64 @@ function getDifferenceFrom(nouveauXML, ancienId){
 }
 
 
+async function digestMessage(lastxml, msg, nbPage){
+    let text = ""
+        if(nbPage == 1){
+            text =
+            lastxml.feed.entry[0].title[0] +
+            '\nDate: ' +
+            lastxml.feed.entry[0].published +
+            '\nAuthor: ' +
+            lastxml.feed.entry[0].author[0].name[0] +
+            '\n' +
+            lastxml.feed.entry[0].link[0].$.href +
+            '\n'
+            await msg.reply.text(text + getHour(), {webPreview: true})
+        } else {
+            for (i = 0; i < nbPage; i++) {
+            text = text +
+            lastxml.feed.entry[i].title[0] + "\n" +
+            lastxml.feed.entry[i].author[0].name[0] +
+            '\n' +
+            lastxml.feed.entry[i].link[0].$.href +
+            '\n\n'
+        }
+        await msg.reply.text(text + getHour(), {webPreview: false})
+    }
+}
 
-function getDate() {
+async function digestFilterMessage(lastxml, msg, nbPage, entries){
+    let text = ""
+        if(nbPage == 1){
+            text =
+            lastxml.feed.entry[entries[0]].title[0] +
+            '\nAuthor: ' +
+            lastxml.feed.entry[entries[0]].author[0].name[0] +
+            '\n' +
+            lastxml.feed.entry[entries[0]].link[0].$.href +
+            '\n'
+            await msg.reply.text(text + getHour(), {webPreview: true})
+        } else {
+            for (i = 0; i < entries.length; i++) {
+            text = text +
+            lastxml.feed.entry[entries[i]].title[0] + "\n" +
+            lastxml.feed.entry[entries[i]].author[0].name[0] +
+            '\n' +
+            lastxml.feed.entry[entries[i]].link[0].$.href +
+            '\n\n'
+        }
+        await msg.reply.text(text + getHour(), {webPreview: false})
+    }
+}
+
+function getHour() {
     //iso 8601
-    return new Date().toISOString()
+    process.env.TZ = 'Europe/Amsterdam'
+    var time = {
+        hours: new Date().getHours(),
+        minutes: new Date().getMinutes()
+    }
+    return time
 }
 
 // console.debug(users_settings.user_settings[976140946].username)
@@ -45,7 +100,7 @@ bot.on('/start', (msg) => {
 bot.on('/help', (msg) => {
     // msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')) +
     let text = 'Commands list:\n/start: Start the bot \n/help: Display the command list\n'
-    msg.reply.text(text + getDate())
+    msg.reply.text(text + getHour())
 })
 bot.on('/settings', async (msg) => {
     let text =
@@ -57,7 +112,7 @@ bot.on('/settings', async (msg) => {
         '\n' +
         'Frequency: ' +
         user_settings(sample_id).preferences.notify.value_notify
-    await msg.reply.text(text + getDate())
+    await msg.reply.text(text + getHour())
 })
 
 bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
@@ -81,23 +136,15 @@ bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
             yesOrNo = true
         }
 
-        for (i = 0; i < nbPage; i++) {
-            let text =
-                lastxml.feed.entry[i].title[0] +
-                '\nAuthor: ' +
-                lastxml.feed.entry[i].author[0].name[0] +
-                '\n' +
-                lastxml.feed.entry[i].link[0].$.href +
-                '\n'
-            await msg.reply.text(text + getDate())
-        }
+        digestMessage(lastxml, msg, nbPage)
+
         if (yesOrNo == true) {
             let text = lastxml.feed.entry.length + ' results founds\n'
-            msg.reply.text(text + getDate())
+            msg.reply.text(text + getHour())
         }
     } else {
         let text = 'No recent results found\n'
-        await msg.reply.text(text + getDate())
+        await msg.reply.text(text + getHour())
     }
 })
 
@@ -122,22 +169,14 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
             entries.push(i)
         }
     }
-    for (var i = 0; i < entries.length; i++) {
-        let text =
-            lastxml.feed.entry[entries[i]].title +
-            '\nAuthor: ' +
-            lastxml.feed.entry[i].author[0].name[0] +
-            '\n' +
-            lastxml.feed.entry[i].link[0].$.href +
-            '\n'
-        await msg.reply.text(text + getDate())
-    }
+    digestFilterMessage(lastxml, msg, nbPage, entries)
+
     if (compteur == 0) {
         let text = 'No recent results found\n'
-        msg.reply.text(text + getDate())
+        msg.reply.text(text + getHour())
     } else if (compteur < nbPage) {
         let text = compteur + ' results found\n'
-        msg.reply.text(text + getDate())
+        msg.reply.text(text + getHour())
     }
 })
 
@@ -150,20 +189,21 @@ bot.on([/^\/notify$/, /^\/notify (.+)$/], async (msg, props) => {
         valueNotify = props.match[1]
     }
 
-    console.debug(props.match[1].length)
-    let file = require('./users_settings.json')
-    // file.user_settings[976140946].preferences.notify.is_notif_ena = (user_settings(sample_id).preferences.notify.is_notif_ena == "true" ? "false" : "true")
-    file.user_settings[976140946].preferences.notify.value_notify = valueNotify
-    // console.debug(file.user_settings[976140946].preferences)
-    fs.writeFile('./users_settings.json', JSON.stringify(file, null, 2), function writeJSON(err) {})
+    user.setNotifyMode(valueNotify, msg)
 })
 
 async function updateXML() {
-    lastxml = await toolbox.request()
-    console.log('[' + getDate() + ']' + '[bot.info] XML file has been updated ')
-    atomfile = fs.readFileSync('./atom.xml', 'utf-8')
-    atomfile = await toolbox.toJSO(atomfile)
-    if (atomfile.feed.entry[0] == lastxml.feed.entry[0]) {
+    if(currentxml.length == 0 || lastxml.length == 0 ){
+        currentxml = await toolbox.request()
+        lastxml = currentxml
+    } else {
+        currentxml = await toolbox.request()
+    }
+    console.log('[' + getHour() + ']' + '[bot.info] XML file has been updated ')
+    // lastxml = fs.readFileSync('./atom.xml', 'utf-8')
+    // lastxml = await toolbox.toJSO(lastxml)
+
+    if (lastxml.feed.entry[0] == currentxml.feed.entry[0]) {
     } else {
         let entries = []
         let compteur = 0
@@ -174,7 +214,7 @@ async function updateXML() {
         // sendNews()
         // Envoyer aux /notify auto
         // console.debug(user)
-        entries = getDifferenceFrom(lastxml, atomfile.feed.entry[0].id[0])
+        entries = getDifferenceFrom(currentxml, lastxml.feed.entry[0].id[0])
         entries.reverse()
         for (const [key, value] of Object.entries(user)) {
             let notifymode = value.settings.notify.notifyMode
@@ -196,11 +236,11 @@ async function updateXML() {
                             entries[i].link[0].$.href +
                             '\n'
                             console.log(text);
-                        bot.sendMessage(value.id, text + getDate())
+                        bot.sendMessage(value.id, text + getHour())
                     }
                     break
                 case 'daily':
-                    entries = getDifferenceFrom(lastxml, idLastSend)
+                    entries = getDifferenceFrom(currentxml, idLastSend)
                     entries.reverse()
                     console.log(entries);
                     break
@@ -220,6 +260,12 @@ async function updateXML() {
 cron.schedule('*/5 * * * *', async () => {
     updateXML()
 })
+cron.schedule('* * * * *', async () => {
+
+})
+
+console.log(getHour().hours);
+console.log(getHour().minutes);
 
 updateXML()
 
