@@ -10,9 +10,9 @@ var parseString = require('xml2js').parseString
 var lastxml = []
 var lastxml = []
 var currentxml = []
-// function user_settings(user_id) {
+// function user(user_id) {
 //     let tmp_users_settings = require('./users_settings.json')
-//     return tmp_users_settings.user_settings[user_id]
+//     return tmp_users_settings.user[user_id]
 // }
 
 
@@ -86,11 +86,37 @@ function getHour() {
         hours: new Date().getHours(),
         minutes: new Date().getMinutes()
     }
-    return time
+    return time.hours + ':' + time.minutes
 }
 
-// console.debug(users_settings.user_settings[976140946].username)
-// console.debug(user_settings(sample_id).preferences.notify.is_notif_ena)
+async function notifyUsers(){
+    getDifferenceFrom(currentxml, idLastSend)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 bot.on('/start', (msg) => {
     user.init(msg)
@@ -105,14 +131,16 @@ bot.on('/help', (msg) => {
 bot.on('/settings', async (msg) => {
     let text =
         'Notifications:\n' +
-        'Push notifications: ' +
-        (user_settings(sample_id).preferences.notify.is_notif_ena == 'true'
+        'Notification mode: ' +
+        (user[msg.from.id].settings.notify.notifyMode != 'off'
             ? 'enabled'
             : 'disabled') +
         '\n' +
         'Frequency: ' +
-        user_settings(sample_id).preferences.notify.value_notify
-    await msg.reply.text(text + getHour())
+        user[msg.from.id].settings.notify.notifyMode +
+        '\nDaytime: ' +
+        user[msg.from.id].settings.notify.dayHour
+    await msg.reply.text(text)
 })
 
 bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
@@ -148,9 +176,6 @@ bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
     }
 })
 
-// bot.on('/notify', (msg) =>
-//   msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list')
-// )
 
 bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
     var nbPage
@@ -207,7 +232,6 @@ async function updateXML() {
     } else {
         let entries = []
         let compteur = 0
-
         // 21:25
         // send to users the changes
         // console.log(entries);
@@ -222,7 +246,6 @@ async function updateXML() {
             let dayWeek = value.settings.notify.dayWeek
             let dayHour = value.settings.notify.dayHour
             let idLastSend = value.settings.notify.idLastSendtext
-            notifymode = 'daily'
             idLastSend = 'https://about.gitlab.com/blog/2020/09/01/a-tale-of-two-editors/'
             switch (notifymode) {
                 case 'auto':
@@ -235,25 +258,32 @@ async function updateXML() {
                             '\n' +
                             entries[i].link[0].$.href +
                             '\n'
-                            console.log(text);
+                            // console.log(text);
                         bot.sendMessage(value.id, text + getHour())
                     }
                     break
                 case 'daily':
                     entries = getDifferenceFrom(currentxml, idLastSend)
                     entries.reverse()
-                    console.log(entries);
+                    if (dayHour == getHour()) {
+                        console.log("helloday");
+                    }
                     break
                 case 'weekly':
-                    console.log('hey')
+                    if (dayWeek == new Date().getDay() && dayHour == getHour()) {
+                        console.log("helloweek");
+                    }
                     break
                 case 'monthly':
-                    console.log('hey')
+                    if (dayMonth == new Date().getDate() && dayHour == getHour()) {
+                        console.log("hellomonth");
+                    }
                     break
                 case 'off':
                     break
             }
         }
+        lastxml = currentxml
     }
 }
 
@@ -261,11 +291,10 @@ cron.schedule('*/5 * * * *', async () => {
     updateXML()
 })
 cron.schedule('* * * * *', async () => {
-
+    updateXML()
 })
-
-console.log(getHour().hours);
-console.log(getHour().minutes);
+console.log(new Date().getDate());
+console.log(new Date().getDay());
 
 updateXML()
 
