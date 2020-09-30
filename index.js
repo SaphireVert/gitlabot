@@ -207,14 +207,39 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
 
 bot.on([/^\/notify$/, /^\/notify (.+)$/], async (msg, props) => {
     var valueNotify
+    var matchArray
     if (typeof props.match[1] === 'undefined') {
-        props.match[1] = 'auto'
-        valueNotify = props.match[1]
+        valueNotify = 'auto'
     } else {
-        valueNotify = props.match[1]
+        matchArray = props.match[1].split(" ")
+        valueNotify = matchArray[0]
     }
+    console.log(valueNotify);
+    switch (valueNotify) {
+        case 'auto':
+            user.setNotifyMode(valueNotify, msg)
+            break
+        case 'daily':
+            user.setDayHour(props.match[2])
+            break
+        case 'weekly':
+            if (dayWeek == new Date().getDay() && dayHour == getHour()) {
+                console.log("helloweek");
+            }
+            break
+        case 'monthly':
+            if (dayMonth == new Date().getDate() && dayHour == getHour()) {
+                console.log("hellomonth");
+            }
+            break
+        case 'off':
+            break
+    }
+})
 
-    user.setNotifyMode(valueNotify, msg)
+bot.on([/^\/log$/], async (msg, props) => {
+    console.log(currentxml);
+    console.log(lastxml);
 })
 
 async function updateXML() {
@@ -222,13 +247,16 @@ async function updateXML() {
         currentxml = await toolbox.request()
         lastxml = currentxml
     } else {
+        lastxml = currentxml
         currentxml = await toolbox.request()
     }
     console.log('[' + getHour() + ']' + '[bot.info] XML file has been updated ')
-    // lastxml = fs.readFileSync('./atom.xml', 'utf-8')
-    // lastxml = await toolbox.toJSO(lastxml)
 
-    if (lastxml.feed.entry[0] == currentxml.feed.entry[0]) {
+
+}
+
+async function checkDifference(){
+    if (lastxml.feed.entry[0].id[0] == currentxml.feed.entry[0].id[0]) {
     } else {
         let entries = []
         let compteur = 0
@@ -283,19 +311,19 @@ async function updateXML() {
                     break
             }
         }
-        lastxml = currentxml
     }
 }
 
-cron.schedule('*/5 * * * *', async () => {
-    updateXML()
-})
 cron.schedule('* * * * *', async () => {
-    updateXML()
+    if (new Date().getMinutes() % 5 == 0) {
+        await updateXML()
+        await checkDifference()
+    } else {
+        checkDifference()
+    }
 })
-console.log(new Date().getDate());
-console.log(new Date().getDay());
 
 updateXML()
+
 
 bot.start()
