@@ -13,9 +13,9 @@
     "nodemon": "^2.0.4"
   },
   "scripts": {
+    "prestart": "npx prettier --write '*.js'",
     "start": "node index.js",
-    "start.prod": "node index.js",
-    "start.dev": "nodemon index.js"
+    "start.dev": "nodemon index.js --exec \"npx prettier --write '*.js'\""
   },
   "repository": {
     "type": "git",
