@@ -9,7 +9,6 @@ var user = new Utils.Users_Settings('./users_settings.json')
 var parseString = require('xml2js').parseString
 const packagejson = require('./package.json')
 var lastxml = []
-var lastxml = []
 var currentxml = []
 
 function getDifferenceFrom(nouveauXML, ancienId) {
@@ -17,10 +16,17 @@ function getDifferenceFrom(nouveauXML, ancienId) {
     let needle = ancienId
     let haystack = nouveauXML.feed.entry
     // find the index of the last item
-    let needleIndex = haystack.findIndex((entry) => entry.id[0] == needle)
+    let needleIndex
+    if (needle != '') {
+        console.debug('getDifferenceFrom: ancienId = ' + ancienId)
+        needleIndex = haystack.findIndex((entry) => entry.id[0] == needle)
+        console.debug('needleIndex is: ' + needleIndex)
+    } else {
+        console.debug('getDifferenceFrom: ancienId is empty')
+        needleIndex = 5
+    }
     // create a new array with the new entries
     let newHaystack = haystack.slice(0, needleIndex)
-
     return newHaystack
 }
 async function digestMessage(lastxml, msg, nbPage) {
@@ -199,8 +205,8 @@ const isDayMonthValid = (nbDay) => {
 
 //         /notify  [auto|daily] monday 08:00
 bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
-    console.debug(msg)
-    console.debug(props)
+    // console.debug(msg)
+    // console.debug(props)
 
     if (typeof props.match[1] !== 'undefined' && validateNotifyMode(props.match[1])) {
         // get mode = off, auto, daily, weekly, monthly
@@ -278,9 +284,9 @@ bot.on([/^\/log$/], async (msg, props) => {
 async function updateXML() {
     if (currentxml.length == 0 || lastxml.length == 0) {
         currentxml = await toolbox.request()
-        lastxml = currentxml
+        lastxml = require('./atom.json')
     } else {
-        lastxml = currentxml
+        lastxml = require('./atom.json')
         currentxml = await toolbox.request()
     }
     console.log('[' + getHour() + ']' + '[bot.info] XML file has been updated ')
@@ -296,18 +302,31 @@ async function checkDifference() {
         // sendNews()
         // Envoyer aux /notify auto
         // console.debug(user)
-        entries = getDifferenceFrom(currentxml, lastxml.feed.entry[0].id[0])
-        entries.reverse()
+        console.debug('------------')
+
         for (const [key, value] of Object.entries(user)) {
             let notifymode = value.settings.notify.notifyMode
             let dayMonth = value.settings.notify.dayMonth
             let dayWeek = value.settings.notify.dayWeek
             let dayHour = value.settings.notify.dayHour
-            let idLastSend = value.settings.notify.idLastSendtext
-            idLastSend = 'https://about.gitlab.com/blog/2020/09/01/a-tale-of-two-editors/'
+            let idLastSend = value.settings.notify.idLastSend
+            // if (value.settings.notify.idLastSend == '') {
+            //     console.debug('Empty idLastSend, sending the 5 last entries')
+            // } else {
+            // }
+
+            entries = getDifferenceFrom(
+                currentxml,
+                idLastSend
+            )
+            entries.reverse()
+            // console.debug(entries.length)
+
+            // entries.forEach((entry, i) => {
+            //     console.log(entry.title[0])
+            // })
             switch (notifymode) {
                 case 'auto':
-                    console.log(entries.length)
                     for (var i = 0; i <= entries.length; i++) {
                         let text =
                             entries[i].title +
@@ -321,8 +340,8 @@ async function checkDifference() {
                     }
                     break
                 case 'daily':
-                    entries = getDifferenceFrom(currentxml, idLastSend)
-                    entries.reverse()
+                    // entries = getDifferenceFrom(currentxml, idLastSend)
+                    // entries.reverse()
                     if (dayHour == getHour()) {
                         console.log('helloday')
                     }
@@ -343,7 +362,7 @@ async function checkDifference() {
         }
     }
 }
-cron.schedule('* * * * *', async () => {
+cron.schedule('* * * * * *', async () => {
     if (new Date().getMinutes() % 5 == 0) {
         await updateXML()
         await checkDifference()
