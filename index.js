@@ -324,6 +324,16 @@ async function checkDifference() {
         // console.debug(user)
         console.debug('------------')
 
+        let tmpUsersList = () => {
+            let tmpArray = []
+            for (const [key, value] of Object.entries(user)) {
+                tmpArray.push(value.id)
+            }
+            return tmpArray
+        }
+        usersList = tmpUsersList()
+        usersList.forEach((entry, i) => {})
+        console.log(usersList)
         for (const [key, value] of Object.entries(user)) {
             let notifymode = value.settings.notify.notifyMode
             let dayMonth = value.settings.notify.dayMonth
@@ -389,5 +399,11 @@ cron.schedule('* * * * *', async () => {
         checkDifference()
     }
 })
-updateXML()
+async function begining() {
+    await updateXML()
+    await checkDifference()
+}
+
+begining()
+
 bot.start()
