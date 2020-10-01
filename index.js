@@ -94,6 +94,25 @@ async function notifyUsers() {
     getDifferenceFrom(currentxml, idLastSend)
 }
 
+async function sendNews(entries, userID) {
+    for (var i = 0; i <= entries.length; i++) {
+        let text =
+            entries[i].title +
+            '\nAuthor: ' +
+            entries[i].author[0].name[0] +
+            '\n' +
+            entries[i].link[0].$.href +
+            '\n'
+        await bot.sendMessage(userID, text)
+    }
+}
+
+bot.on('newChatMembers', (msg) => {
+    // user.init(msg)
+    console.debug(msg)
+    let text = 'Welcome !'
+    msg.reply.text(text)
+})
 bot.on('/start', (msg) => {
     user.init(msg)
     let text =
@@ -103,6 +122,7 @@ bot.on('/start', (msg) => {
     msg.reply.text(text)
 })
 bot.on('/help', (msg) => {
+    user.init(msg)
     // msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')) +
     let text =
         'Commands list:\n/start: Start the bot \n/help: Display the command list\nGitlabot v' +
@@ -310,15 +330,14 @@ async function checkDifference() {
             let dayWeek = value.settings.notify.dayWeek
             let dayHour = value.settings.notify.dayHour
             let idLastSend = value.settings.notify.idLastSend
+            let userID = value.id
+            // console.log(value.id)
             // if (value.settings.notify.idLastSend == '') {
             //     console.debug('Empty idLastSend, sending the 5 last entries')
             // } else {
             // }
 
-            entries = getDifferenceFrom(
-                currentxml,
-                idLastSend
-            )
+            entries = getDifferenceFrom(currentxml, idLastSend)
             entries.reverse()
             // console.debug(entries.length)
 
@@ -336,14 +355,14 @@ async function checkDifference() {
                             entries[i].link[0].$.href +
                             '\n'
                         // console.log(text);
-                        bot.sendMessage(value.id, text + getHour())
+                        bot.sendMessage(userID, text + getHour())
                     }
                     break
                 case 'daily':
-                    // entries = getDifferenceFrom(currentxml, idLastSend)
-                    // entries.reverse()
                     if (dayHour == getHour()) {
                         console.log('helloday')
+                        sendNews(entries, userID)
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], userID)
                     }
                     break
                 case 'weekly':
@@ -362,7 +381,7 @@ async function checkDifference() {
         }
     }
 }
-cron.schedule('* * * * * *', async () => {
+cron.schedule('* * * * *', async () => {
     if (new Date().getMinutes() % 5 == 0) {
         await updateXML()
         await checkDifference()
