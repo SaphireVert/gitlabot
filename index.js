@@ -7,6 +7,7 @@ const toolbox = new Utils.Utils()
 const bot = new Utils.Message(BOT_TOKEN)
 var user = new Utils.Users_Settings('./users_settings.json')
 var parseString = require('xml2js').parseString
+const packagejson = require('./package.json')
 var lastxml = []
 var lastxml = []
 var currentxml = []
@@ -89,13 +90,19 @@ async function notifyUsers() {
 
 bot.on('/start', (msg) => {
     user.init(msg)
-    let text = 'Welcome to gitlabot ! Type /help to get some help.'
+    let text =
+        'Welcome to gitlabot ! Type /help to get some help.\nGitlabot v' +
+        packagejson.version +
+        '\nSource code: https://github.com/saphirevert/gitlabot'
     msg.reply.text(text)
 })
 bot.on('/help', (msg) => {
     // msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')) +
-    let text = 'Commands list:\n/start: Start the bot \n/help: Display the command list\n'
-    msg.reply.text(text + getHour())
+    let text =
+        'Commands list:\n/start: Start the bot \n/help: Display the command list\nGitlabot v' +
+        packagejson.version +
+        '\nSource code: https://github.com/saphirevert/gitlabot'
+    msg.reply.text(text)
 })
 bot.on('/settings', async (msg) => {
     let text =
@@ -108,7 +115,10 @@ bot.on('/settings', async (msg) => {
         '\nDaytime: ' +
         user[msg.from.id].settings.notify.dayHour +
         '\nMonth day: ' +
-        user[msg.from.id].settings.notify.dayMonth
+        user[msg.from.id].settings.notify.dayMonth +
+        '\nGitlabot v' +
+        packagejson.version +
+        '\nSource code: https://github.com/saphirevert/gitlabot'
     await msg.reply.text(text)
 })
 bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
