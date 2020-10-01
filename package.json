@@ -15,7 +15,7 @@
   "scripts": {
     "prestart": "npx prettier --write '*.js'",
     "start": "node index.js",
-    "start.dev": "nodemon index.js --exec \"npx prettier --write '*.js'\""
+    "start.dev": "nodemon index.js --exec \"npx prettier --write '*.js' && node\""
   },
   "repository": {
     "type": "git",
