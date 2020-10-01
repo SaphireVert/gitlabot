@@ -40,6 +40,20 @@ class Message extends TeleBot {
     constructor(cfg) {
         super(cfg)
     }
+
+    on(types, fn, opt) {
+        super.on(types, fn, opt)
+        console.log('Yeah')
+    }
+
+    event(types, data, self) {
+        if (types == 'update') {
+            console.log('new message')
+            console.log(data)
+        }
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1000)
+        return super.event(types, data, self)
+    }
 }
 
 class Users_Settings {
