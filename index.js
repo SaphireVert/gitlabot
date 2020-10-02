@@ -2,14 +2,28 @@ var cron = require('node-cron')
 const fs = require('fs')
 var secretsFile = require('./secrets.json')
 const BOT_TOKEN = secretsFile.BOT_TOKEN
-const Utils = require('./utils.js')
-const toolbox = new Utils.Utils()
-const bot = new Utils.Message(BOT_TOKEN)
-var user = new Utils.Users_Settings('./users_settings.json')
+const Utils = require('./Utils.js')
+const Message = require('./Message.js')
+const Users_Settings = require('./Users_Settings.js')
+var user = new Users_Settings('./users_settings.json')
+const toolbox = new Utils()
+const bot = new Message(BOT_TOKEN)
 var parseString = require('xml2js').parseString
 const packagejson = require('./package.json')
 var lastxml = []
 var currentxml = []
+var listUsers = []
+var forceCheck = false
+
+const usersDataFolder = './data/users/'
+
+// fs.readdirSync(usersDataFolder).forEach((file) => {
+//     listUsers.push(new Users_Settings(usersDataFolder + file))
+// })
+
+// console.log(listUsers)
+
+// listUsers[0].save()
 
 function getDifferenceFrom(nouveauXML, ancienId) {
     // let needle = ancien.feed.entry[0].id[0]
@@ -95,26 +109,39 @@ async function notifyUsers() {
 }
 
 async function sendNews(entries, userID) {
-    for (var i = 0; i <= entries.length; i++) {
-        let text =
-            entries[i].title +
+    let text = ''
+    if (entries.length == 1) {
+        text =
+            entries[0].title +
             '\nAuthor: ' +
-            entries[i].author[0].name[0] +
+            entries[0].author[0].name[0] +
             '\n' +
-            entries[i].link[0].$.href +
+            entries[0].link[0].$.href +
             '\n'
         await bot.sendMessage(userID, text)
+    } else if (entries.length > 1) {
+        for (var i = 0; i < entries.length; i++) {
+            text =
+                text +
+                entries[i].title[0] +
+                '\nAuthor: ' +
+                entries[i].author[0].name[0] +
+                '\n' +
+                entries[i].link[0].$.href +
+                '\n'
+        }
+        await bot.sendMessage(userID, text)
+    } else {
     }
 }
 
 bot.on('newChatMembers', (msg) => {
-    // user.init(msg)
-    console.debug(msg)
+    // user.init(msg.from)
     let text = 'Welcome !'
     msg.reply.text(text)
 })
 bot.on('/start', (msg) => {
-    user.init(msg)
+    user.init(msg.from)
     let text =
         'Welcome to gitlabot ! Type /help to get some help.\nGitlabot v' +
         packagejson.version +
@@ -122,7 +149,7 @@ bot.on('/start', (msg) => {
     msg.reply.text(text)
 })
 bot.on('/help', (msg) => {
-    user.init(msg)
+    user.init(msg.from)
     // msg.reply.text('Commands list:\n/start: Start the bot \n/help: Display the command list\n' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')) +
     let text =
         'Commands list:\n/start: Start the bot \n/help: Display the command list\nGitlabot v' +
@@ -225,17 +252,16 @@ const isDayMonthValid = (nbDay) => {
 
 //         /notify  [auto|daily] monday 08:00
 bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
-    // console.debug(msg)
+    // console.debug(msg.from)
     // console.debug(props)
 
     if (typeof props.match[1] !== 'undefined' && validateNotifyMode(props.match[1])) {
         // get mode = off, auto, daily, weekly, monthly
         if (props.match[1] == 'off' || props.match[1] == 'auto') {
-            user.setNotifyMode(props.match[1], msg)
-            user.setDayMonth('-', msg)
-            user.setDayWeek('-', msg)
+            user.setNotifyMode(props.match[1], msg.from)
+            user.setDayMonth('-', msg.from)
+            user.setDayWeek('-', msg.from)
             msg.reply.text('Successfuly set to ' + props.match[1] + ' !')
-            return
         }
 
         // got  daily (or weekly, monthly)
@@ -245,12 +271,11 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
                 typeof props.match[2] !== 'undefined' && isHourValid(props.match[2])
                     ? props.match[2]
                     : '08:00'
-            user.setNotifyMode(props.match[1], msg)
-            user.setDayHour(dailyArg, msg)
-            user.setDayMonth('-', msg)
-            user.setDayWeek('-', msg)
+            user.setNotifyMode(props.match[1], msg.from)
+            user.setDayHour(dailyArg, msg.from)
+            user.setDayMonth('-', msg.from)
+            user.setDayWeek('-', msg.from)
             msg.reply.text(`Successfuly set to ${props.match[1]}, ${dailyArg} !`)
-            return
         }
 
         // got weekly
@@ -263,14 +288,13 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
                 typeof props.match[3] !== 'undefined' && isHourValid(props.match[3])
                     ? props.match[3]
                     : '08:00'
-            user.setNotifyMode(props.match[1], msg)
-            user.setDayHour(weeklyArgHour, msg)
-            user.setDayWeek(weeklyArgDay, msg)
-            user.setDayMonth('-', msg)
+            user.setNotifyMode(props.match[1], msg.from)
+            user.setDayHour(weeklyArgHour, msg.from)
+            user.setDayWeek(weeklyArgDay, msg.from)
+            user.setDayMonth('-', msg.from)
             msg.reply.text(
                 `Successfuly set to ${props.match[1]}, ${weeklyArgDay}, ${weeklyArgHour} !`
             )
-            return
         }
         // got monthly
         if (props.match[1] == 'monthly') {
@@ -282,14 +306,13 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
                 typeof props.match[3] !== 'undefined' && isHourValid(props.match[3])
                     ? props.match[3]
                     : '08:00'
-            user.setNotifyMode(props.match[1], msg)
-            user.setDayHour(monthlyArgHour, msg)
-            user.setDayMonth(monthlyArgDay, msg)
-            user.setDayWeek('-', msg)
+            user.setNotifyMode(props.match[1], msg.from)
+            user.setDayHour(monthlyArgHour, msg.from)
+            user.setDayMonth(monthlyArgDay, msg.from)
+            user.setDayWeek('-', msg.from)
             msg.reply.text(
                 `Successfuly set to ${props.match[1]}, ${monthlyArgDay}, ${monthlyArgHour} !`
             )
-            return
         }
     } else {
         // → error no notify arg
@@ -312,8 +335,12 @@ async function updateXML() {
     console.log('[' + getHour() + ']' + '[bot.info] XML file has been updated ')
 }
 async function checkDifference() {
-    if (lastxml.feed.entry[0].id[0] == currentxml.feed.entry[0].id[0]) {
-    } else {
+    for (const [key, value] of Object.entries(user)) {
+        if (value.settings.notify.idLastSend == '') {
+            forceCheck = true
+        }
+    }
+    if (forceCheck == true || lastxml.feed.entry[0].id[0] != currentxml.feed.entry[0].id[0]) {
         let entries = []
         let compteur = 0
         // 21:25
@@ -322,18 +349,18 @@ async function checkDifference() {
         // sendNews()
         // Envoyer aux /notify auto
         // console.debug(user)
-        console.debug('------------')
 
-        let tmpUsersList = () => {
-            let tmpArray = []
-            for (const [key, value] of Object.entries(user)) {
-                tmpArray.push(value.id)
-            }
-            return tmpArray
-        }
-        usersList = tmpUsersList()
-        usersList.forEach((entry, i) => {})
-        console.log(usersList)
+        // let tmpUsersList = () => {
+        //     let tmpArray = []
+        //     for (const [key, value] of Object.entries(user)) {
+        //         tmpArray.push(value.id)
+        //     }
+        //     return tmpArray
+        // }
+        // usersList = tmpUsersList()
+        // usersList.forEach((entry, i) => {})
+        // console.log(usersList)
+
         for (const [key, value] of Object.entries(user)) {
             let notifymode = value.settings.notify.notifyMode
             let dayMonth = value.settings.notify.dayMonth
@@ -341,48 +368,35 @@ async function checkDifference() {
             let dayHour = value.settings.notify.dayHour
             let idLastSend = value.settings.notify.idLastSend
             let userID = value.id
-            // console.log(value.id)
-            // if (value.settings.notify.idLastSend == '') {
-            //     console.debug('Empty idLastSend, sending the 5 last entries')
-            // } else {
-            // }
+
+            let userInfos = await bot.getChat(userID)
 
             entries = getDifferenceFrom(currentxml, idLastSend)
-            entries.reverse()
-            // console.debug(entries.length)
-
-            // entries.forEach((entry, i) => {
-            //     console.log(entry.title[0])
-            // })
+            // entries.reverse()
             switch (notifymode) {
                 case 'auto':
-                    for (var i = 0; i <= entries.length; i++) {
-                        let text =
-                            entries[i].title +
-                            '\nAuthor: ' +
-                            entries[i].author[0].name[0] +
-                            '\n' +
-                            entries[i].link[0].$.href +
-                            '\n'
-                        // console.log(text);
-                        bot.sendMessage(userID, text + getHour())
-                    }
+                    sendNews(entries, userID)
+                    user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos)
                     break
                 case 'daily':
                     if (dayHour == getHour()) {
-                        console.log('helloday')
+                        console.debug('helloday')
                         sendNews(entries, userID)
-                        user.setIdLastSend(currentxml.feed.entry[0].id[0], userID)
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos)
                     }
                     break
                 case 'weekly':
                     if (dayWeek == new Date().getDay() && dayHour == getHour()) {
-                        console.log('helloweek')
+                        console.debug('helloweek')
+                        sendNews(entries, userID)
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos)
                     }
                     break
                 case 'monthly':
                     if (dayMonth == new Date().getDate() && dayHour == getHour()) {
-                        console.log('hellomonth')
+                        console.debug('hellomonth')
+                        sendNews(entries, userID)
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos)
                     }
                     break
                 case 'off':
@@ -391,17 +405,25 @@ async function checkDifference() {
         }
     }
 }
-cron.schedule('* * * * *', async () => {
-    if (new Date().getMinutes() % 5 == 0) {
-        await updateXML()
-        await checkDifference()
-    } else {
-        checkDifference()
-    }
-})
+// cron.schedule('* * * * *', async () => {
+//     if (new Date().getMinutes() % 5 == 0) {
+//         await updateXML()
+//         await checkDifference()
+//     } else {
+//         checkDifference()
+//     }
+// })
 async function begining() {
     await updateXML()
-    await checkDifference()
+    // await checkDifference()
+    cron.schedule('* * * * *', async () => {
+        if (new Date().getMinutes() % 5 == 0) {
+            await updateXML()
+            await checkDifference()
+        } else {
+            await checkDifference()
+        }
+    })
 }
 
 begining()
