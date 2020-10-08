@@ -1,20 +1,23 @@
 var tmpDebugMode
+var secretsFile = require("./secrets.json")
+var tmpBotToken;
 if (process.argv[2] == "--debug=true") {
     console.log("----- DEBUG MODE -----")
     tmpDebugMode = true
+    tmpBotToken = secretsFile.TESTBOT_TOKEN
 } else {
     tmpDebugMode = false
+    tmpBotToken = secretsFile.BOT_TOKEN
 }
-const debugMode = tmpDebugMode
+const BOT_TOKEN = tmpBotToken
+const DEBUG_MODE = tmpDebugMode
 var cron = require("node-cron")
 const fs = require("fs")
-var secretsFile = require("./secrets.json")
-const BOT_TOKEN = secretsFile.BOT_TOKEN
 const Utils = require("./Utils.js")
 const Message = require("./Message.js")
 const Users_Settings = require("./Users_Settings.js")
 var user = new Users_Settings("./users_settings.json")
-const utils = new Utils(debugMode)
+const utils = new Utils(DEBUG_MODE)
 const bot = new Message(BOT_TOKEN)
 var parseString = require("xml2js").parseString
 const packagejson = require("./package.json")
@@ -151,7 +154,7 @@ bot.on("/start", (msg) => {
 bot.on("/help", async (msg) => {
     user.init(msg.from)
     // DO to : add /settings
-    
+
     // bot.sendMessage(msg.from.id, '```Test```', { parseMode: 'MarkdownV2' })
     // charray = packagejson.version.split('')
     // console.debug(charray)
@@ -161,6 +164,7 @@ bot.on("/help", async (msg) => {
         "Commands list:\n/start - Start the bot\n/help - Display the command list\n" +
         "/notify `[notifMode]` - Set notification mode\n" +
         "/last `[number]` - List the latest gitlabot article(s)\n/release `[number]` - Lists the latest release(s) from Gitlab \n" +
+        "/settings - Display the current settings" +
         "\n-------------------------------------------------------\n_Gitlabot current version:_ " +
         packagejson.version
     str.split("").forEach((char, i) => {
