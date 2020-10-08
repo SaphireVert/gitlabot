@@ -1,6 +1,6 @@
 {
   "name": "gitlabot",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A gitlab update bot",
   "main": "index.js",
   "dependencies": {
@@ -15,7 +15,8 @@
   "scripts": {
     "prestart": "npx prettier --write '*.js'",
     "start": "node index.js",
-    "start.dev": "nodemon index.js --exec \"npx prettier --write '*.js' && node\""
+    "start.dev": "nodemon index.js --debug=true",
+    "start.devp": "nodemon index.js --debug=true --exec \"npx prettier --write '*.js' && node\""
   },
   "repository": {
     "type": "git",
@@ -42,7 +43,7 @@
     "trailingComma": "es5",
     "tabWidth": 4,
     "semi": false,
-    "singleQuote": true,
+    "singleQuote": false,
     "printWidth": 100
   }
 }

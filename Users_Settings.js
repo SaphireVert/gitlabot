@@ -1,13 +1,13 @@
-const http = require('http')
-const https = require('https')
-const fetch = require('node-fetch')
-var xml2js = require('xml2js')
+const http = require("http")
+const https = require("https")
+const fetch = require("node-fetch")
+var xml2js = require("xml2js")
 var parser = new xml2js.Parser(/* options */)
-const fs = require('fs')
+const fs = require("fs")
 // var secretsFile = Fs.readFileSync('./secrets.json', 'utf-8')
 // const secretsFileObj = JSON.parse(secretsFile)
 // const BOT_TOKEN = secretsFileObj.BOT_TOKEN
-const TeleBot = require('telebot')
+const TeleBot = require("telebot")
 // const bot = new TeleBot(BOT_TOKEN)
 
 class Users_Settings {
@@ -32,7 +32,6 @@ class Users_Settings {
         this.save()
     }
     async setDayHour(value, userInfos) {
-        console.log(this[userInfos.id])
         this.init(userInfos)
         this[userInfos.id].settings.notify.dayHour = value
         this.save()
@@ -46,11 +45,11 @@ class Users_Settings {
         this[userInfos.id] = userInfos
         this[userInfos.id].settings = {
             notify: {
-                notifyMode: 'off',
-                dayMonth: '',
-                dayWeek: '',
-                dayHour: '',
-                idLastSend: '',
+                notifyMode: "off",
+                dayMonth: "",
+                dayWeek: "",
+                dayHour: "",
+                idLastSend: "",
             },
         }
         this.save(userInfos.id)
@@ -58,18 +57,23 @@ class Users_Settings {
 
     init(userInfos) {
         if (!this[userInfos.id]) {
-            console.log('New user detected: ' + userInfos.username)
-            console.log('Adding ' + userInfos.username)
+            console.log("New user detected: " + userInfos.username)
+            console.log("Adding " + userInfos.username)
             this.add(userInfos)
         }
     }
 
-    save() {
+    save(user) {
         //     getChat
         // }
-        fs.writeFile('./users_settings.json', JSON.stringify(this, null, 2), function writeJSON(
+        fs.writeFile("./users_settings.json", JSON.stringify(this, null, 2), function writeJSON(
             err
         ) {})
+    }
+
+    reset(userInfos){
+        this[userInfos.id] = ''
+        this.save(userInfos.id)
     }
 
     // getUserInfos(userID){
@@ -89,18 +93,18 @@ class Users_Settings {
         // }
         if (!fs.existsSync(filePath)) {
             console.log("File settings doesn't exists, creating it")
-            fs.writeFileSync(filePath, '{}')
+            fs.writeFileSync(filePath, "{}")
         } else {
             let file
             try {
                 file = require(filePath)
             } catch {
-                console.log('Invalid JSON file... backuping and recreating file')
+                console.log("Invalid JSON file... backuping and recreating file")
                 // fs.copyFile(filePath, 'backup.json')
-                fs.writeFileSync(filePath, '{}')
+                fs.writeFileSync(filePath, "{}")
                 file = require(filePath)
             }
-            console.log('Charging users data')
+            console.log("Charging users data")
             for (const [key, value] of Object.entries(file)) {
                 this[key] = value
             }
