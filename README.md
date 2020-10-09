@@ -4,7 +4,7 @@
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
 
-# GITLABOT
+# Gitlabot
 
 - A simple bot for gitlab updates
 
@@ -14,29 +14,16 @@
 
 # Gitlab bot commands
 
-| command      | description                                              |
-| ------------ | -------------------------------------------------------- |
-| `/start`     | Display welcome message                                  |
-| `/help`      | Display a list of available commands                     |
-| `/last`      | Display the latest blog info, regardless of the type     |
-| `/last 5`    | Display the latest 5 blog info, regardless of the type   |
-| `/release`   | Display the latest release info                          |
-| `/release 5` | Display the latest 5 release info                        |
+| command                           | description                                                                   |
+|-----------------------------------|-------------------------------------------------------------------------------|
+| `/start`                          | Display welcome message                                                       |
+| `/help`                           | Display a list of available commands                                          |
+| `/notify <param> [args]` <br> **Parameters**: <br> - auto  <br> - off <br> - daily <br> - weekly <br> - monthly <br> <br> **Arguments**: <br> - weekdays <br> - monthday <br> - daytime | Set the notification rules                                                    |
+| `/last [nbr]`                     | Display the latest [nbr] blog info (default is 1), regardless of the type     |
+| `/release [nbr]`                  | Display the latest [nbr] release info (default is 1)                          |
+| `/settings`                       | Display the current settings values                                           |
 
 ## Getting started
-
-### Prerequisites
-
-You will need the following :
-
-* npm
-* nodejs
-* telebot
-
-```sh
-sudo apt install nodejs npm
-```
-
 
 ### Installation
 
@@ -54,12 +41,12 @@ git clone git@github.com:SaphireVert/gitlabot.git
 npm install telebot
 ```
 
-4. Copy secrets_sample.json and replace the bot token value by your own bot token. You can also define it in your ENV by naming your ENV: BOT_TOKEN
+4. Rename sample_secrets.json in secrets.json and replace the bot token value by your own bot token. You can also define it in your ENV by naming your ENV: BOT_TOKEN
 
 5. Start the bot
 
 ```sh
-npm start
+make up
 ```
 
 ## ToDo
@@ -68,16 +55,6 @@ npm start
     culture, insights, company, security, unfiltered
     * 💡 Add buttons to choose the type ?
     * 💡 /release, /culture, etc.
-  * User should be able to choose when to receive notification :
-     * `/notify off` disable notifications
-     * `/notify auto` get the notification as soon as the server gets it
-     * `/notify daily 08:00` user get all the *new* notifications that have
-        appeared since the last one
-     * `/notify weekly 08:00` user get all the *new* notifications that have
-        appeared since the last one, on monday 08:00
-     * `/notify monthly 08:00` user get all the *new* notifications that have
-       appeared since the last one, on the first of the month 08:00
-   * `/settings` user can see the current notification preference
    * Admin can ask the server for a dump of the storage file that contains every
      users preference
    * Other use case: what if a user want to have the new release notification as
