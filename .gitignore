@@ -1,4 +1,3 @@
-secrets.json
 node_modules
 msg_sample.json
 users_settings.json
@@ -7,3 +6,5 @@ users_setting*
 test.js
 atom.*
 data*
+secrets-dev.json
+secrets.json

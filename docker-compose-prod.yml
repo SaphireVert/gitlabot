@@ -7,4 +7,4 @@ services:
       - "${PWD}:/gitlabot"
     expose:
       - "8081"
-    command: "npm run-script start"
+    command: "npm i && npm run-script start"
