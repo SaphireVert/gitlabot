@@ -1,15 +1,12 @@
 var tmpDebugMode
 var secretsFile = require("./secrets.json")
-var tmpBotToken;
 if (process.argv[2] == "--debug=true") {
     console.log("----- DEBUG MODE -----")
     tmpDebugMode = true
-    tmpBotToken = secretsFile.TESTBOT_TOKEN
 } else {
     tmpDebugMode = false
-    tmpBotToken = secretsFile.BOT_TOKEN
 }
-const BOT_TOKEN = tmpBotToken
+const BOT_TOKEN = secretsFile.BOT_TOKEN
 const DEBUG_MODE = tmpDebugMode
 var cron = require("node-cron")
 const fs = require("fs")
