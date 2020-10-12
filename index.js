@@ -152,20 +152,17 @@ async function sendNews(entries, chatID) {
 }
 
 bot.on("/test", async (msg) => {
-    user.init(msg)
+    user.init(msg.from, msg.chat)
     checkDifference()
-    // console.log('djkfowejksfnkmkcdhfiskwfjosfisfshiofis');
-    // console.log(await bot.getChat(msg.chat.id));
-    // console.log(await bot.getChat(msg.from.id));
 })
 bot.on("/start", (msg) => {
-    user.init(msg)
+    user.init(msg.from, msg.chat)
     let text =
         "*Welcome to gitlabot* \\! \n\nType /help to get some help\\."
     msg.reply.text(text, { parseMode: "MarkdownV2" })
 })
 bot.on("/help", async (msg) => {
-    user.init(msg)
+    user.init(msg.from, msg.chat)
     let text = ""
     var str =
         "*Commands list*:\n\n\n/start                                        _Start the bot_\n\n/help                                        _Shows the commands list_\n\n" +
@@ -186,8 +183,7 @@ bot.on("/help", async (msg) => {
     await msg.reply.text(text, { parseMode: "MarkdownV2" })
 })
 bot.on("/settings", async (msg) => {
-    user.init(msg)
-    console.log(user[msg.from.id][msg.chat.id].notify.notifyMode);
+    user.init(msg.from, msg.chat)
     var table = new AsciiTable('Settings')
     table
       .addRow('Notification mode', user[msg.from.id][msg.chat.id].notify.notifyMode)
@@ -280,9 +276,9 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
     if (typeof props.match[1] !== "undefined" && validateNotifyMode(props.match[1])) {
         // get mode = off, auto, daily, weekly, monthly
         if (props.match[1] == "off" || props.match[1] == "auto") {
-            user.setNotifyMode(props.match[1], msg)
-            user.setDayMonth("-", msg)
-            user.setDayWeek("-", msg)
+            user.setNotifyMode(props.match[1], msg.from, msg.chat)
+            user.setDayMonth("-", msg.from, msg.chat)
+            user.setDayWeek("-", msg.from, msg.chat)
             msg.reply.text("Successfuly set to " + props.match[1] + " !")
         }
 
@@ -293,10 +289,10 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
                 typeof props.match[2] !== "undefined" && isHourValid(props.match[2])
                     ? props.match[2]
                     : "08:00"
-            user.setNotifyMode(props.match[1], msg)
-            user.setDayHour(dailyArg, msg)
-            user.setDayMonth("-", msg)
-            user.setDayWeek("-", msg)
+            user.setNotifyMode(props.match[1], msg.from, msg.chat)
+            user.setDayHour(dailyArg, msg.from, msg.chat)
+            user.setDayMonth("-", msg.from, msg.chat)
+            user.setDayWeek("-", msg.from, msg.chat)
             msg.reply.text(`Successfuly set to ${props.match[1]}, ${dailyArg} !`)
         }
 
@@ -310,10 +306,10 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
                 typeof props.match[3] !== "undefined" && isHourValid(props.match[3])
                     ? props.match[3]
                     : "08:00"
-            user.setNotifyMode(props.match[1], msg)
-            user.setDayHour(weeklyArgHour, msg)
-            user.setDayWeek(weeklyArgDay, msg)
-            user.setDayMonth("-", msg)
+            user.setNotifyMode(props.match[1], msg.from, msg.chat)
+            user.setDayHour(weeklyArgHour, msg.from, msg.chat)
+            user.setDayWeek(weeklyArgDay, msg.from, msg.chat)
+            user.setDayMonth("-", msg.from, msg.chat)
             msg.reply.text(
                 `Successfuly set to ${props.match[1]}, ${weeklyArgDay}, ${weeklyArgHour} !`
             )
@@ -328,10 +324,10 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
                 typeof props.match[3] !== "undefined" && isHourValid(props.match[3])
                     ? props.match[3]
                     : "08:00"
-            user.setNotifyMode(props.match[1], msg)
-            user.setDayHour(monthlyArgHour, msg)
-            user.setDayMonth(monthlyArgDay, msg)
-            user.setDayWeek("-", msg)
+            user.setNotifyMode(props.match[1], msg.from, msg.chat)
+            user.setDayHour(monthlyArgHour, msg.from, msg.chat)
+            user.setDayMonth(monthlyArgDay, msg.from, msg.chat)
+            user.setDayWeek("-", msg.from, msg.chat)
             msg.reply.text(
                 `Successfuly set to ${props.match[1]}, ${monthlyArgDay}, ${monthlyArgHour} !`
             )
@@ -348,7 +344,7 @@ bot.on([/^\/log$/], async (msg, props) => {
 })
 
 bot.on([/^\/reset$/], async (msg, props) => {
-    user.reset(msg)
+    user.reset(msg.from, msg.chat)
     msg.reply.text('Configuration reset successfuly!')
 })
 async function updateXML() {
@@ -382,28 +378,30 @@ async function checkDifference() {
                 let idLastSend = chatValue.notify.idLastSend
                 let chatID = chatKey
                 let userID = userKey
+                userInfos = await bot.getChat(userID)
+                chatInfos = await bot.getChat(chatID)
                 entries = getDifferenceFrom(currentxml, idLastSend)
                 switch (notifymode) {
                     case "auto":
                     sendNews(entries, chatID)
-                    user.setIdLastSend(currentxml.feed.entry[0].id[0], chatKey)
+                    user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos, chatInfos)
                     break
                     case "daily":
                     if (dayHour == getHour()) {
                         sendNews(entries, chatID)
-                        user.setIdLastSend(currentxml.feed.entry[0].id[0], chatKey)
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos, chatInfos)
                     }
                     break
                     case "weekly":
                     if (dayWeek == new Date().getDay() && dayHour == getHour()) {
                         sendNews(entries, chatID)
-                        user.setIdLastSend(currentxml.feed.entry[0].id[0], chatKey)
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos, chatInfos)
                     }
                     break
                     case "monthly":
                     if (dayMonth == new Date().getDate() && dayHour == getHour()) {
                         sendNews(entries, chatID)
-                        user.setIdLastSend(currentxml.feed.entry[0].id[0], chatKey)
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos, chatInfos)
                     }
                     break
                     case "off":

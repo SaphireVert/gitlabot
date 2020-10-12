@@ -12,33 +12,33 @@ class Users_Settings {
         this.save()
     }
 
-    async setNotifyMode(value, msg) {
-        this.init(msg)
-        this[msg.from.id][msg.chat.id].notify.notifyMode = value
+    async setNotifyMode(value, userInfos, chatInfos) {
+        this.init(userInfos, chatInfos)
+        this[userInfos.id][chatInfos.id].notify.notifyMode = value
         this.save()
     }
-    async setDayMonth(value, msg) {
-        this.init(msg)
-        this[msg.from.id][msg.chat.id].notify.dayMonth = value
+    async setDayMonth(value, userInfos, chatInfos) {
+        this.init(userInfos, chatInfos)
+        this[userInfos.id][chatInfos.id].notify.dayMonth = value
         this.save()
     }
-    async setDayWeek(value, msg) {
-        this.init(msg)
-        this[msg.from.id][msg.chat.id].notify.dayWeek = value
+    async setDayWeek(value, userInfos, chatInfos) {
+        this.init(userInfos, chatInfos)
+        this[userInfos.id][chatInfos.id].notify.dayWeek = value
         this.save()
     }
-    async setDayHour(value, msg) {
-        this.init(msg)
-        this[msg.from.id][msg.chat.id].notify.dayHour = value
+    async setDayHour(value, userInfos, chatInfos) {
+        this.init(userInfos, chatInfos)
+        this[userInfos.id][chatInfos.id].notify.dayHour = value
         this.save()
     }
-    async setIdLastSend(value, msg) {
-        this.init(msg)
-        this[msg.from.id][msg.chat.id].notify.idLastSend = value
+    async setIdLastSend(value, userInfos, chatInfos) {
+        this.init(userInfos, chatInfos)
+        this[userInfos.id][chatInfos.id].notify.idLastSend = value
         this.save()
     }
-    async addChat(msg) {
-        this[msg.from.id][msg.chat.id.toString()] = {
+    async addChat(userInfos, chatInfos) {
+        this[userInfos.id][chatInfos.id.toString()] = {
             notify: {
                 notifyMode: "off",
                 dayMonth: "",
@@ -49,9 +49,9 @@ class Users_Settings {
         }
         this.save()
     }
-    async addUser(msg) {
-        this[msg.from.id] = {
-            [msg.chat.id.toString()]: {
+    async addUser(userInfos, chatInfos) {
+        this[userInfos.id] = {
+            [chatInfos.id.toString()]: {
                 notify: {
                     notifyMode: "off",
                     dayMonth: "",
@@ -64,14 +64,14 @@ class Users_Settings {
         this.save()
     }
 
-    async init(msg) {
-        if (!this[msg.from.id]) {
-            console.log("New user detected: " + msg.from.username)
-            console.log("Adding " + msg.from.username)
-            await this.addUser(msg)
+    async init(userInfos, chatInfos) {
+        if (!this[userInfos.id]) {
+            console.log("New user detected: " + userInfos.username)
+            console.log("Adding " + userInfos.username)
+            await this.addUser(userInfos, chatInfos)
         }
-        if (!this[msg.from.id][msg.chat.id]) {
-            await this.addChat(msg)
+        if (!this[userInfos.id][chatInfos.id]) {
+            await this.addChat(userInfos, chatInfos)
         }
     }
 
@@ -82,8 +82,8 @@ class Users_Settings {
         ) {})
     }
 
-    reset(msg) {
-        this[msg.from.id] = ""
+    reset(userInfos, chatInfos) {
+        this[userInfos.id] = ""
         this.save()
     }
 
