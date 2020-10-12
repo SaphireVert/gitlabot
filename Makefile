@@ -13,6 +13,9 @@ up-dev:
 up-test:
 	npm run-script start.test
 
+tag:
+	npm version patch
+
 # up:
 # 	npm run-script start.prod
 #
