@@ -175,7 +175,7 @@ bot.on("/start", (msg) => {
     msg.reply.text(text, { parseMode: "MarkdownV2" })
 })
 bot.on("/help", async (msg) => {
-    user.init(msg.from)
+    user.init(msg)
     var table = new AsciiTable('Help')
     let text = ""
     var str =
