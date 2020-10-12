@@ -151,8 +151,12 @@ async function sendNews(entries, chatID) {
     }
 }
 
-bot.on("/test", (msg) => {
+bot.on("/test", async (msg) => {
     user.init(msg)
+    checkDifference()
+    // console.log('djkfowejksfnkmkcdhfiskwfjosfisfshiofis');
+    // console.log(await bot.getChat(msg.chat.id));
+    // console.log(await bot.getChat(msg.from.id));
 })
 bot.on("/start", (msg) => {
     user.init(msg)
@@ -358,54 +362,53 @@ async function updateXML() {
     console.log("[" + getHour() + "]" + "[bot.info] XML file has been updated ")
 }
 async function checkDifference() {
-    for (const [key, value] of Object.entries(user)) {
+    for (const [key_, value_] of Object.entries(user)) {
+    for (const [key, value] of Object.entries(value_)) {
         if (value.notify.idLastSend == "") {
             forceCheck = true
         }
+    }
     }
     if (forceCheck == true || lastxml.feed.entry[0].id[0] != currentxml.feed.entry[0].id[0]) {
         let entries = []
         let compteur = 0
 
-        for (const [key, value] of Object.entries(user)) {
-            let notifymode = value.notify.notifyMode
-            let dayMonth = value.notify.dayMonth
-            let dayWeek = value.notify.dayWeek
-            let dayHour = value.notify.dayHour
-            let idLastSend = value.notify.idLastSend
-            let userID = value.id
-
-            let userInfos = await bot.getChat(userID)
-            console.log("yes");
-            console.log(dayHour);
-            console.log(getHour());
-            entries = getDifferenceFrom(currentxml, idLastSend)
-            switch (notifymode) {
-                case "auto":
-                    sendNews(entries, userID)
-                    user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos)
+        for (const [userKey, userValue] of Object.entries(user)) {
+            for (const [chatKey, chatValue] of Object.entries(userValue)) {
+                let notifymode = chatValue.notify.notifyMode
+                let dayMonth = chatValue.notify.dayMonth
+                let dayWeek = chatValue.notify.dayWeek
+                let dayHour = chatValue.notify.dayHour
+                let idLastSend = chatValue.notify.idLastSend
+                let chatID = chatKey
+                let userID = userKey
+                entries = getDifferenceFrom(currentxml, idLastSend)
+                switch (notifymode) {
+                    case "auto":
+                    sendNews(entries, chatID)
+                    user.setIdLastSend(currentxml.feed.entry[0].id[0], chatKey)
                     break
-                case "daily":
+                    case "daily":
                     if (dayHour == getHour()) {
-                        console.log(entries);
-                        sendNews(entries, userID)
-                        user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos)
+                        sendNews(entries, chatID)
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], chatKey)
                     }
                     break
-                case "weekly":
+                    case "weekly":
                     if (dayWeek == new Date().getDay() && dayHour == getHour()) {
-                        sendNews(entries, userID)
-                        user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos)
+                        sendNews(entries, chatID)
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], chatKey)
                     }
                     break
-                case "monthly":
+                    case "monthly":
                     if (dayMonth == new Date().getDate() && dayHour == getHour()) {
-                        sendNews(entries, userID)
-                        user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos)
+                        sendNews(entries, chatID)
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], chatKey)
                     }
                     break
-                case "off":
+                    case "off":
                     break
+                }
             }
         }
     }
