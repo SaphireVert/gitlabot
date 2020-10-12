@@ -22,6 +22,7 @@ var lastxml = []
 var currentxml = []
 var listUsers = []
 var forceCheck = false
+var AsciiTable = require('ascii-table')
 
 const usersDataFolder = "./data/users/"
 
@@ -47,60 +48,72 @@ async function digestMessage(lastxml, msg, nbPage) {
     let text = ""
     if (nbPage == 1) {
         text =
-            lastxml.feed.entry[0].title[0] +
-            "\nDate: " +
-            lastxml.feed.entry[0].published +
-            "\nAuthor: " +
-            lastxml.feed.entry[0].author[0].name[0] +
-            "\n" +
+            "*" + lastxml.feed.entry[0].title[0] + "*" +
+            "\n\nDate: " +
+            "_" + lastxml.feed.entry[0].published + "_" +
+            "\n\nAuthor: " +
+            "_" + lastxml.feed.entry[0].author[0].name[0] + "_" +
+            "\n\nLink: " +
             lastxml.feed.entry[0].link[0].$.href +
             "\n"
-        await msg.reply.text(text + getHour(), { webPreview: true })
+        await msg.reply.text(text, {parseMode: 'Markdown'})
     } else {
         for (i = 0; i < nbPage; i++) {
             text =
                 text +
-                lastxml.feed.entry[i].title[0] +
-                "\n" +
-                lastxml.feed.entry[i].author[0].name[0] +
-                "\n" +
+                "*" + lastxml.feed.entry[i].title[0] + "*" +
+                "\n\nDate: " +
+                "_" + lastxml.feed.entry[i].published + "_" +
+                "\n\nAuthor: " +
+                "_" + lastxml.feed.entry[i].author[0].name[0] + "_" +
+                "\n\nLink: " +
                 lastxml.feed.entry[i].link[0].$.href +
-                "\n\n"
+                "\n\n-------------------------------------------------------------------\n\n"
         }
-        await msg.reply.text(text + getHour(), { webPreview: false })
+        await msg.reply.text(text, {parseMode: 'Markdown', webPreview: false})
     }
 }
 async function digestFilterMessage(lastxml, msg, nbPage, entries) {
     let text = ""
     if (nbPage == 1) {
         text =
-            lastxml.feed.entry[entries[0]].title[0] +
-            "\nAuthor: " +
-            lastxml.feed.entry[entries[0]].author[0].name[0] +
-            "\n" +
+            "*" + lastxml.feed.entry[entries[0]].title[0] + "*" +
+            "\n\nDate: " +
+            "_" + lastxml.feed.entry[entries[0]].published + "_" +
+            "\n\nAuthor: " +
+            "_" + lastxml.feed.entry[entries[0]].author[0].name[0] + "_" +
+            "\n\nLink: " +
             lastxml.feed.entry[entries[0]].link[0].$.href +
             "\n"
-        await msg.reply.text(text + getHour(), { webPreview: true })
+        await msg.reply.text(text, {parseMode: 'Markdown'})
     } else {
         for (i = 0; i < entries.length; i++) {
-            text =
-                text +
-                lastxml.feed.entry[entries[i]].title[0] +
-                "\n" +
-                lastxml.feed.entry[entries[i]].author[0].name[0] +
-                "\n" +
+            console.log(entries[i]);
+            text +=
+                "*" + lastxml.feed.entry[entries[i]].title[0] + "*" +
+                "\n\nDate: " +
+                "_" + lastxml.feed.entry[entries[i]].published + "_" +
+                "\n\nAuthor: " +
+                "_" + lastxml.feed.entry[entries[i]].author[0].name[0] + "_" +
+                "\n\nLink: " +
                 lastxml.feed.entry[entries[i]].link[0].$.href +
-                "\n\n"
+                "\n\n-------------------------------------------------------------------\n\n"
         }
-        await msg.reply.text(text + getHour(), { webPreview: false })
+        await msg.reply.text(text, {parseMode: 'Markdown', webPreview: false})
     }
 }
 function getHour() {
     //iso 8601
     process.env.TZ = "Europe/Amsterdam"
     var time = {
-        hours: new Date().getHours(),
-        minutes: new Date().getMinutes(),
+        hours: new Date().getHours().toString(),
+        minutes: new Date().getMinutes().toString(),
+    }
+    if (time.hours.length == 1) {
+        time.hours = "0" + time.hours
+    }
+    if (time.minutes.length == 1) {
+        time.minutes = "0" + time.minutes
     }
     return time.hours + ":" + time.minutes
 }
@@ -112,57 +125,65 @@ async function sendNews(entries, userID) {
     let text = ""
     if (entries.length == 1) {
         text =
-            entries[0].title +
-            "\nAuthor: " +
-            entries[0].author[0].name[0] +
-            "\n" +
-            entries[0].link[0].$.href +
-            "\n"
-        await bot.sendMessage(userID, text)
+        "*" + entries[0].title[0] + "*" +
+        "\n\nDate: " +
+        "_" + entries[0].published + "_" +
+        "\n\nAuthor: " +
+        "_" + entries[0].author[0].name[0] + "_" +
+        "\n\nLink: " +
+        entries[0].link[0].$.href +
+        "\n"
+        await bot.sendMessage(userID, text, {parseMode: 'Markdown'})
     } else if (entries.length > 1) {
         for (var i = 0; i < entries.length; i++) {
             text =
                 text +
-                entries[i].title[0] +
-                "\nAuthor: " +
-                entries[i].author[0].name[0] +
-                "\n" +
+                "*" + entries[i].title[0] + "*" +
+                "\n\nDate: " +
+                "_" + entries[i].published + "_" +
+                "\n\nAuthor: " +
+                "_" + entries[i].author[0].name[0] + "_" +
+                "\n\nLink: " +
                 entries[i].link[0].$.href +
-                "\n"
+                "\n\n-------------------------------------------------------------------\n\n"
         }
-        await bot.sendMessage(userID, text)
+        await bot.sendMessage(userID, text, {parseMode: 'Markdown', webPreview: false})
     } else {
     }
 }
 
-bot.on("newChatMembers", (msg) => {
-    // user.init(msg.from)
-    let text = "Welcome !"
-    msg.reply.text(text)
+bot.on("/test", (msg) => {
+    user.init(msg.from)
+    var table = new AsciiTable('A Title')
+    table
+      .setHeading('', 'Name', 'Age')
+      .addRow(1, 'Bob', 52)
+      .addRow(2, 'John', 34)
+      .addRow(3, 'Jim', 83)
+
+    let tableString = table.toString()
+    tableString = "`" + tableString + "`"
+    console.log(tableString)
+
+    msg.reply.text(tableString, {parseMode: 'Markdown'})
 })
+
 bot.on("/start", (msg) => {
     user.init(msg.from)
     let text =
-        "Welcome to gitlabot ! Type /help to get some help.\nGitlabot v" +
-        packagejson.version +
-        "\nSource code: https://github.com/saphirevert/gitlabot"
-    msg.reply.text(text)
+        "*Welcome to gitlabot* \\! \n\nType /help to get some help\\."
+    msg.reply.text(text, { parseMode: "MarkdownV2" })
 })
 bot.on("/help", async (msg) => {
     user.init(msg.from)
-    // DO to : add /settings
-
-    // bot.sendMessage(msg.from.id, '```Test```', { parseMode: 'MarkdownV2' })
-    // charray = packagejson.version.split('')
-    // console.debug(charray)
-
+    var table = new AsciiTable('Help')
     let text = ""
     var str =
-        "Commands list:\n/start - Start the bot\n/help - Display the command list\n" +
-        "/notify `[notifMode]` - Set notification mode\n" +
-        "/last `[number]` - List the latest gitlabot article(s)\n/release `[number]` - Lists the latest release(s) from Gitlab \n" +
-        "/settings - Display the current settings" +
-        "\n-------------------------------------------------------\n_Gitlabot current version:_ " +
+        "*Commands list*:\n\n\n/start                                        _Start the bot_\n\n/help                                        _Shows the commands list_\n\n" +
+        "/notify `[notifMode]`           _Set notification mode_\n\n" +
+        "/last `[number]`                      _Lists the latest gitlabot article(s)_\n\n/release `[number]`               _Lists the latest release(s) from Gitlab_ \n\n" +
+        "/settings                                 _Shows the current settings_" +
+        "\n\n-------------------------------------------------------\n\n_Gitlabot current version:_ " +
         packagejson.version
     str.split("").forEach((char, i) => {
         if (char == "." || char == "-" || char == "(" || char == ")" || char == "|") {
@@ -177,21 +198,19 @@ bot.on("/help", async (msg) => {
 })
 bot.on("/settings", async (msg) => {
     user.init(msg.from)
-    let text =
-        "Notifications:\n" +
-        "Notification mode: " +
-        (user[msg.from.id].settings.notify.notifyMode != "off" ? "enabled" : "disabled") +
-        "\n" +
-        "Frequency: " +
-        user[msg.from.id].settings.notify.notifyMode +
-        "\nDaytime: " +
-        user[msg.from.id].settings.notify.dayHour +
-        "\nMonth day: " +
-        user[msg.from.id].settings.notify.dayMonth +
-        "\nGitlabot v" +
-        packagejson.version +
-        "\nSource code: https://github.com/saphirevert/gitlabot"
-    await msg.reply.text(text)
+    var table = new AsciiTable('Settings')
+    table
+      .addRow('Notification mode', user[msg.from.id].settings.notify.notifyMode)
+      .addRow('Day time', (user[msg.from.id].settings.notify.dayHour == "" ? "-" : user[msg.from.id].settings.notify.dayHour))
+      .addRow('Week day', (user[msg.from.id].settings.notify.dayWeek == "" ? "-" : user[msg.from.id].settings.notify.dayWeek))
+      .addRow('Month day', (user[msg.from.id].settings.notify.dayMonth == "" ? "-" : user[msg.from.id].settings.notify.dayMonth))
+
+
+    let tableString = table.toString()
+    tableString = "`" + tableString + "`"
+    console.log(tableString)
+
+    msg.reply.text(tableString, {parseMode: 'Markdown'})
 })
 bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
     var nbPage
@@ -203,24 +222,24 @@ bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
     try {
         let test = lastxml.feed.entry
     } catch (error) {
-        lastxml.feed = { entry: [] }
+        currentxml.feed = { entry: [] }
     }
     let yesOrNo = false
-    if (lastxml.feed.entry.length) {
-        if (nbPage > lastxml.feed.entry.length) {
-            nbPage = lastxml.feed.entry.length
+    if (currentxml.feed.entry.length) {
+        if (nbPage > currentxml.feed.entry.length) {
+            nbPage = currentxml.feed.entry.length
             yesOrNo = true
         }
 
-        digestMessage(lastxml, msg, nbPage)
+        digestMessage(currentxml, msg, nbPage)
 
         if (yesOrNo == true) {
-            let text = lastxml.feed.entry.length + " results founds\n"
-            msg.reply.text(text + getHour())
+            let text = currentxml.feed.entry.length + " results founds\n"
+            msg.reply.text(text)
         }
     } else {
         let text = "No recent results found\n"
-        await msg.reply.text(text + getHour())
+        await msg.reply.text(text)
     }
 })
 bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
@@ -232,22 +251,22 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
     }
     let entries = []
     let compteur = 0
-    for (let i = 0; compteur < nbPage && i < lastxml.feed.entry.length; i++) {
-        var sentence = lastxml.feed.entry[i].title[0].toLowerCase()
+    for (let i = 0; compteur < nbPage && i < currentxml.feed.entry.length; i++) {
+        var sentence = currentxml.feed.entry[i].title[0].toLowerCase()
         var word = "Release"
         if (sentence.includes(word.toLowerCase())) {
             compteur++
             entries.push(i)
         }
     }
-    digestFilterMessage(lastxml, msg, nbPage, entries)
+    digestFilterMessage(currentxml, msg, nbPage, entries)
 
     if (compteur == 0) {
         let text = "No recent results found\n"
-        msg.reply.text(text + getHour())
+        msg.reply.text(text)
     } else if (compteur < nbPage) {
         let text = compteur + " results found\n"
-        msg.reply.text(text + getHour())
+        msg.reply.text(text)
     }
 })
 
@@ -267,7 +286,6 @@ const isDayMonthValid = (nbDay) => {
     return /^([0-31])$/.test(nbDay)
 }
 
-//         /notify  [auto|daily] monday 08:00
 bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
     if (typeof props.match[1] !== "undefined" && validateNotifyMode(props.match[1])) {
         // get mode = off, auto, daily, weekly, monthly
@@ -361,20 +379,6 @@ async function checkDifference() {
     if (forceCheck == true || lastxml.feed.entry[0].id[0] != currentxml.feed.entry[0].id[0]) {
         let entries = []
         let compteur = 0
-        // 21:25
-        // send to users the changes
-        // sendNews()
-        // Envoyer aux /notify auto
-
-        // let tmpUsersList = () => {
-        //     let tmpArray = []
-        //     for (const [key, value] of Object.entries(user)) {
-        //         tmpArray.push(value.id)
-        //     }
-        //     return tmpArray
-        // }
-        // usersList = tmpUsersList()
-        // usersList.forEach((entry, i) => {})
 
         for (const [key, value] of Object.entries(user)) {
             let notifymode = value.settings.notify.notifyMode
@@ -385,9 +389,10 @@ async function checkDifference() {
             let userID = value.id
 
             let userInfos = await bot.getChat(userID)
-
+            console.log("yes");
+            console.log(dayHour);
+            console.log(getHour());
             entries = getDifferenceFrom(currentxml, idLastSend)
-            // entries.reverse()
             switch (notifymode) {
                 case "auto":
                     sendNews(entries, userID)
@@ -395,6 +400,7 @@ async function checkDifference() {
                     break
                 case "daily":
                     if (dayHour == getHour()) {
+                        console.log(entries);
                         sendNews(entries, userID)
                         user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos)
                     }
@@ -417,14 +423,6 @@ async function checkDifference() {
         }
     }
 }
-// cron.schedule('* * * * *', async () => {
-//     if (new Date().getMinutes() % 5 == 0) {
-//         await updateXML()
-//         await checkDifference()
-//     } else {
-//         checkDifference()
-//     }
-// })
 async function begining() {
     await updateXML()
     // await checkDifference()

@@ -4,6 +4,7 @@
   "description": "A gitlab update bot",
   "main": "index.js",
   "dependencies": {
+    "ascii-table": "0.0.9",
     "node-cron": "^2.0.3",
     "node-fetch": "^2.6.0",
     "telebot": "^1.4.1",
