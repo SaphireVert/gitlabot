@@ -16,64 +16,85 @@ class Users_Settings {
         this.save()
     }
 
-    async setNotifyMode(value, userInfos) {
-        this.init(userInfos)
-        this[userInfos.id].settings.notify.notifyMode = value
+    async setNotifyMode(value, msg) {
+        this.init(msg)
+        this[msg.id].chatID.user.settings.notify.notifyMode = value
         this.save()
     }
-    async setDayMonth(value, userInfos) {
-        this.init(userInfos)
-        this[userInfos.id].settings.notify.dayMonth = value
+    async setDayMonth(value, msg) {
+        this.init(msg)
+        this[msg.id].settings.notify.dayMonth = value
         this.save()
     }
-    async setDayWeek(value, userInfos) {
-        this.init(userInfos)
-        this[userInfos.id].settings.notify.dayWeek = value
+    async setDayWeek(value, msg) {
+        this.init(msg)
+        this[msg.id].settings.notify.dayWeek = value
         this.save()
     }
-    async setDayHour(value, userInfos) {
-        this.init(userInfos)
-        this[userInfos.id].settings.notify.dayHour = value
+    async setDayHour(value, msg) {
+        this.init(msg)
+        this[msg.id].settings.notify.dayHour = value
         this.save()
     }
-    async setIdLastSend(value, userInfos) {
-        this.init(userInfos)
-        this[userInfos.id].settings.notify.idLastSend = value
+    async setIdLastSend(value, msg) {
+        this.init(msg)
+        this[msg.id].settings.notify.idLastSend = value
         this.save()
     }
-    async add(userInfos) {
-        this[userInfos.id] = userInfos
-        this[userInfos.id].settings = {
+    async addChat(msg){
+        this[msg.from.id][msg.chat.id.toString()] = {
             notify: {
                 notifyMode: "off",
                 dayMonth: "",
                 dayWeek: "",
                 dayHour: "",
-                idLastSend: "",
-            },
+                idLastSend: ""
+            }
         }
-        this.save(userInfos.id)
+        console.log(this);
+        // console.log(this[msg.from.id][msg.chat.id.toString()].valueOf());
+        // this[msg.from.id][msg.chat.id.toString()].push('test', 'test2')
+        // this[msg.from.id][msg.chat.id.toString()] = array
+        // console.log(this[msg.from.id][msg.chat.id.toString()]);
+        // this.save(msg.from.id)
+    }
+    async addUser(msg) {
+        this[msg.from.id] = {
+            [msg.chat.id.toString()]: {
+                notify: {
+                    notifyMode: "off",
+                    dayMonth: "",
+                    dayWeek: "",
+                    dayHour: "",
+                    idLastSend: ""
+                }
+            }
+        }
     }
 
-    init(userInfos) {
-        if (!this[userInfos.id]) {
-            console.log("New user detected: " + userInfos.username)
-            console.log("Adding " + userInfos.username)
-            this.add(userInfos)
+    async init(msg) {
+        if (!this[msg.from.id]) {
+            console.log("New user detected: " + msg.from.username)
+            console.log("Adding " + msg.from.username)
+            await this.addUser(msg)
+        }
+        if (!this[msg.from.id][msg.chat.id]){
+            await this.addChat(msg)
         }
     }
 
     save(user) {
         //     getChat
         // }
+        console.log(this);
         fs.writeFile("./users_settings.json", JSON.stringify(this, null, 2), function writeJSON(
             err
         ) {})
     }
 
-    reset(userInfos){
-        this[userInfos.id] = ''
-        this.save(userInfos.id)
+    reset(msg){
+        this[msg.id] = ''
+        this.save(msg.id)
     }
 
     // getUserInfos(userID){
