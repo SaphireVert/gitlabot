@@ -1,7 +1,31 @@
+const winston = require('winston');
+const { colorize, combine, timestamp, printf } = winston.format
+
+const logFormat = printf(({ timestamp, level, message }) => {
+  return `${timestamp} ${level}: ${message}`
+})
+
+const logger = winston.createLogger({
+  level: 'debug',
+  format: combine(
+    timestamp(),
+    colorize(),
+    logFormat,
+  ),
+  transports: [
+    new winston.transports.Console({
+    handleExceptions: true,
+    json: false,
+    colorize: true,
+  }),
+  ],
+});
+
+
 var tmpDebugMode
 var secretsFile = require("./secrets.json")
 if (process.argv[2] == "--debug=true") {
-    console.log("----- DEBUG MODE -----")
+    logger.warn("----- DEBUG MODE -----")
     tmpDebugMode = true
 } else {
     tmpDebugMode = false
@@ -151,6 +175,10 @@ async function sendNews(entries, chatID) {
     }
 }
 
+bot.on("*", async (msg) => {
+    logger.debug("Message-----------------------")
+})
+
 bot.on("/test", async (msg) => {
     user.init(msg.from, msg.chat)
     checkDifference()
@@ -171,12 +199,14 @@ bot.on("/help", async (msg) => {
         "/settings                                 _Shows the current settings_" +
         "\n\n-------------------------------------------------------\n\n_Gitlabot current version:_ " +
         packagejson.version
+    <!-- prettier-ignore-start -->
     str.split("").forEach((char, i) => {
         if (char == "." || char == "-" || char == "(" || char == ")" || char == "|") {
             text += "\\"
         }
         text += char
     })
+    <!-- prettier-ignore-end -->
     text +=
         "\nSource code: [Github](https://github.com/saphirevert/gitlabot)\n" +
         "You have an issue ? \\-\\-\\> [Gitlabot issues](https://github.com/SaphireVert/gitlabot/issues)"
@@ -411,7 +441,7 @@ async function checkDifference() {
         }
     }
 }
-async function begining() {
+async function beginning() {
     await updateXML()
     // await checkDifference()
     cron.schedule("* * * * *", async () => {
@@ -424,6 +454,6 @@ async function begining() {
     })
 }
 
-begining()
+beginning()
 
 bot.start()
