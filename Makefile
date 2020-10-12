@@ -16,11 +16,8 @@ up-test:
 tag:
 	npm version patch
 
-# up:
-# 	npm run-script start.prod
-#
-# dev-up:
-# 	npm run-script start.dev
+# push:
+# 	git push origin [tag]
 
 .PHONY: prettier-check
 prettier-check:
