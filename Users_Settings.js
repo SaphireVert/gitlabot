@@ -14,27 +14,27 @@ class Users_Settings {
 
     async setNotifyMode(value, msg) {
         this.init(msg)
-        this[msg.from.id].chatID.user.settings.notify.notifyMode = value
+        this[msg.from.id][msg.chat.id].notify.notifyMode = value
         this.save()
     }
     async setDayMonth(value, msg) {
         this.init(msg)
-        this[msg.from.id].settings.notify.dayMonth = value
+        this[msg.from.id][msg.chat.id].notify.dayMonth = value
         this.save()
     }
     async setDayWeek(value, msg) {
         this.init(msg)
-        this[msg.from.id].settings.notify.dayWeek = value
+        this[msg.from.id][msg.chat.id].notify.dayWeek = value
         this.save()
     }
     async setDayHour(value, msg) {
         this.init(msg)
-        this[msg.from.id].settings.notify.dayHour = value
+        this[msg.from.id][msg.chat.id].notify.dayHour = value
         this.save()
     }
     async setIdLastSend(value, msg) {
         this.init(msg)
-        this[msg.from.id].settings.notify.idLastSend = value
+        this[msg.from.id][msg.chat.id].notify.idLastSend = value
         this.save()
     }
     async addChat(msg) {

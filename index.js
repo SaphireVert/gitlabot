@@ -44,6 +44,21 @@ function getDifferenceFrom(nouveauXML, ancienId) {
     let newHaystack = haystack.slice(0, needleIndex)
     return newHaystack
 }
+function getHour() {
+    //iso 8601
+    process.env.TZ = "Europe/Amsterdam"
+    var time = {
+        hours: new Date().getHours().toString(),
+        minutes: new Date().getMinutes().toString(),
+    }
+    if (time.hours.length == 1) {
+        time.hours = "0" + time.hours
+    }
+    if (time.minutes.length == 1) {
+        time.minutes = "0" + time.minutes
+    }
+    return time.hours + ":" + time.minutes
+}
 async function digestMessage(lastxml, msg, nbPage) {
     let text = ""
     if (nbPage == 1) {
@@ -102,26 +117,10 @@ async function digestFilterMessage(lastxml, msg, nbPage, entries) {
         await msg.reply.text(text, {parseMode: 'Markdown', webPreview: false})
     }
 }
-function getHour() {
-    //iso 8601
-    process.env.TZ = "Europe/Amsterdam"
-    var time = {
-        hours: new Date().getHours().toString(),
-        minutes: new Date().getMinutes().toString(),
-    }
-    if (time.hours.length == 1) {
-        time.hours = "0" + time.hours
-    }
-    if (time.minutes.length == 1) {
-        time.minutes = "0" + time.minutes
-    }
-    return time.hours + ":" + time.minutes
-}
 async function notifyUsers() {
     getDifferenceFrom(currentxml, idLastSend)
 }
-
-async function sendNews(entries, userID) {
+async function sendNews(entries, chatID) {
     let text = ""
     if (entries.length == 1) {
         text =
@@ -133,7 +132,7 @@ async function sendNews(entries, userID) {
         "\n\nLink: " +
         entries[0].link[0].$.href +
         "\n"
-        await bot.sendMessage(userID, text, {parseMode: 'Markdown'})
+        await bot.sendMessage(chatID, text, {parseMode: 'Markdown'})
     } else if (entries.length > 1) {
         for (var i = 0; i < entries.length; i++) {
             text =
@@ -147,27 +146,14 @@ async function sendNews(entries, userID) {
                 entries[i].link[0].$.href +
                 "\n\n-------------------------------------------------------------------\n\n"
         }
-        await bot.sendMessage(userID, text, {parseMode: 'Markdown', webPreview: false})
+        await bot.sendMessage(chatID, text, {parseMode: 'Markdown', webPreview: false})
     } else {
     }
 }
 
 bot.on("/test", (msg) => {
     user.init(msg)
-    var table = new AsciiTable('A Title')
-    table
-      .setHeading('', 'Name', 'Age')
-      .addRow(1, 'Bob', 52)
-      .addRow(2, 'John', 34)
-      .addRow(3, 'Jim', 83)
-
-    let tableString = table.toString()
-    tableString = "`" + tableString + "`"
-    console.log(tableString)
-
-    msg.reply.text(tableString, {parseMode: 'Markdown'})
 })
-
 bot.on("/start", (msg) => {
     user.init(msg)
     let text =
@@ -176,7 +162,6 @@ bot.on("/start", (msg) => {
 })
 bot.on("/help", async (msg) => {
     user.init(msg)
-    var table = new AsciiTable('Help')
     let text = ""
     var str =
         "*Commands list*:\n\n\n/start                                        _Start the bot_\n\n/help                                        _Shows the commands list_\n\n" +
@@ -198,12 +183,13 @@ bot.on("/help", async (msg) => {
 })
 bot.on("/settings", async (msg) => {
     user.init(msg)
+    console.log(user[msg.from.id][msg.chat.id].notify.notifyMode);
     var table = new AsciiTable('Settings')
     table
-      .addRow('Notification mode', user[msg.from.id].settings.notify.notifyMode)
-      .addRow('Day time', (user[msg.from.id].settings.notify.dayHour == "" ? "-" : user[msg.from.id].settings.notify.dayHour))
-      .addRow('Week day', (user[msg.from.id].settings.notify.dayWeek == "" ? "-" : user[msg.from.id].settings.notify.dayWeek))
-      .addRow('Month day', (user[msg.from.id].settings.notify.dayMonth == "" ? "-" : user[msg.from.id].settings.notify.dayMonth))
+      .addRow('Notification mode', user[msg.from.id][msg.chat.id].notify.notifyMode)
+      .addRow('Day time', (user[msg.from.id][msg.chat.id].notify.dayHour == "" ? "-" : user[msg.from.id][msg.chat.id].notify.dayHour))
+      .addRow('Week day', (user[msg.from.id][msg.chat.id].notify.dayWeek == "" ? "-" : user[msg.from.id][msg.chat.id].notify.dayWeek))
+      .addRow('Month day', (user[msg.from.id][msg.chat.id].notify.dayMonth == "" ? "-" : user[msg.from.id][msg.chat.id].notify.dayMonth))
 
 
     let tableString = table.toString()
@@ -359,6 +345,7 @@ bot.on([/^\/log$/], async (msg, props) => {
 
 bot.on([/^\/reset$/], async (msg, props) => {
     user.reset(msg)
+    msg.reply.text('Configuration reset successfuly!')
 })
 async function updateXML() {
     if (currentxml.length == 0 || lastxml.length == 0) {
@@ -372,7 +359,7 @@ async function updateXML() {
 }
 async function checkDifference() {
     for (const [key, value] of Object.entries(user)) {
-        if (value.settings.notify.idLastSend == "") {
+        if (value.notify.idLastSend == "") {
             forceCheck = true
         }
     }
@@ -381,11 +368,11 @@ async function checkDifference() {
         let compteur = 0
 
         for (const [key, value] of Object.entries(user)) {
-            let notifymode = value.settings.notify.notifyMode
-            let dayMonth = value.settings.notify.dayMonth
-            let dayWeek = value.settings.notify.dayWeek
-            let dayHour = value.settings.notify.dayHour
-            let idLastSend = value.settings.notify.idLastSend
+            let notifymode = value.notify.notifyMode
+            let dayMonth = value.notify.dayMonth
+            let dayWeek = value.notify.dayWeek
+            let dayHour = value.notify.dayHour
+            let idLastSend = value.notify.idLastSend
             let userID = value.id
 
             let userInfos = await bot.getChat(userID)
