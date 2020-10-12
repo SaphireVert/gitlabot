@@ -153,7 +153,7 @@ async function sendNews(entries, userID) {
 }
 
 bot.on("/test", (msg) => {
-    user.init(msg.from)
+    user.init(msg)
     var table = new AsciiTable('A Title')
     table
       .setHeading('', 'Name', 'Age')
@@ -169,7 +169,7 @@ bot.on("/test", (msg) => {
 })
 
 bot.on("/start", (msg) => {
-    user.init(msg.from)
+    user.init(msg)
     let text =
         "*Welcome to gitlabot* \\! \n\nType /help to get some help\\."
     msg.reply.text(text, { parseMode: "MarkdownV2" })
@@ -197,7 +197,7 @@ bot.on("/help", async (msg) => {
     await msg.reply.text(text, { parseMode: "MarkdownV2" })
 })
 bot.on("/settings", async (msg) => {
-    user.init(msg.from)
+    user.init(msg)
     var table = new AsciiTable('Settings')
     table
       .addRow('Notification mode', user[msg.from.id].settings.notify.notifyMode)
@@ -290,9 +290,9 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
     if (typeof props.match[1] !== "undefined" && validateNotifyMode(props.match[1])) {
         // get mode = off, auto, daily, weekly, monthly
         if (props.match[1] == "off" || props.match[1] == "auto") {
-            user.setNotifyMode(props.match[1], msg.from)
-            user.setDayMonth("-", msg.from)
-            user.setDayWeek("-", msg.from)
+            user.setNotifyMode(props.match[1], msg)
+            user.setDayMonth("-", msg)
+            user.setDayWeek("-", msg)
             msg.reply.text("Successfuly set to " + props.match[1] + " !")
         }
 
@@ -303,10 +303,10 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
                 typeof props.match[2] !== "undefined" && isHourValid(props.match[2])
                     ? props.match[2]
                     : "08:00"
-            user.setNotifyMode(props.match[1], msg.from)
-            user.setDayHour(dailyArg, msg.from)
-            user.setDayMonth("-", msg.from)
-            user.setDayWeek("-", msg.from)
+            user.setNotifyMode(props.match[1], msg)
+            user.setDayHour(dailyArg, msg)
+            user.setDayMonth("-", msg)
+            user.setDayWeek("-", msg)
             msg.reply.text(`Successfuly set to ${props.match[1]}, ${dailyArg} !`)
         }
 
@@ -320,10 +320,10 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
                 typeof props.match[3] !== "undefined" && isHourValid(props.match[3])
                     ? props.match[3]
                     : "08:00"
-            user.setNotifyMode(props.match[1], msg.from)
-            user.setDayHour(weeklyArgHour, msg.from)
-            user.setDayWeek(weeklyArgDay, msg.from)
-            user.setDayMonth("-", msg.from)
+            user.setNotifyMode(props.match[1], msg)
+            user.setDayHour(weeklyArgHour, msg)
+            user.setDayWeek(weeklyArgDay, msg)
+            user.setDayMonth("-", msg)
             msg.reply.text(
                 `Successfuly set to ${props.match[1]}, ${weeklyArgDay}, ${weeklyArgHour} !`
             )
@@ -338,10 +338,10 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
                 typeof props.match[3] !== "undefined" && isHourValid(props.match[3])
                     ? props.match[3]
                     : "08:00"
-            user.setNotifyMode(props.match[1], msg.from)
-            user.setDayHour(monthlyArgHour, msg.from)
-            user.setDayMonth(monthlyArgDay, msg.from)
-            user.setDayWeek("-", msg.from)
+            user.setNotifyMode(props.match[1], msg)
+            user.setDayHour(monthlyArgHour, msg)
+            user.setDayMonth(monthlyArgDay, msg)
+            user.setDayWeek("-", msg)
             msg.reply.text(
                 `Successfuly set to ${props.match[1]}, ${monthlyArgDay}, ${monthlyArgHour} !`
             )
@@ -358,7 +358,7 @@ bot.on([/^\/log$/], async (msg, props) => {
 })
 
 bot.on([/^\/reset$/], async (msg, props) => {
-    user.reset(msg.from)
+    user.reset(msg)
 })
 async function updateXML() {
     if (currentxml.length == 0 || lastxml.length == 0) {
