@@ -45,24 +45,7 @@ var AsciiTable = require('ascii-table')
 
 const usersDataFolder = './data/users/'
 
-function getDifferenceFrom(nouveauXML, ancienId) {
-    let needle = ancienId
-    let haystack = nouveauXML.feed.entry
-
-    // find the index of the last item
-    let needleIndex
-    if (needle != '') {
-        logger.debug('getDifferenceFrom: ancienId = ' + ancienId)
-        needleIndex = haystack.findIndex((entry) => entry.id[0] == needle)
-        logger.debug('needleIndex is: ' + needleIndex)
-    } else {
-        logger.debug('getDifferenceFrom: ancienId is empty')
-        needleIndex = 5
-    }
-    // create a new array with the new entries
-    let newHaystack = haystack.slice(0, needleIndex)
-    return newHaystack
-}
+// Pure
 function getHour() {
     //iso 8601
     process.env.TZ = 'Europe/Amsterdam'
@@ -160,7 +143,7 @@ async function digestFilterMessage(lastxml, chatID, nbPage, entries) {
     }
 }
 async function notifyUsers() {
-    getDifferenceFrom(currentxml, idLastSend)
+    await utils.getNewXMLentries(currentxml, idLastSend)
 }
 async function sendNews(entries, chatID) {
     let text = ''
@@ -209,10 +192,13 @@ bot.on('*', async (msg) => {
     logger.debug('Event : Message')
 })
 
-bot.on('/test', async (msg) => {
+if(DEBUG_MODE){
+    bot.on('/test', async (msg) => {
     user.init(msg.from, msg.chat)
     checkDifference()
 })
+}
+
 bot.on('/start', (msg) => {
     user.init(msg.from, msg.chat)
     let text = '*Welcome to gitlabot* \\! \n\nType /help to get some help\\.'
@@ -463,15 +449,13 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
     }
 })
 
-bot.on([/^\/log$/], async (msg, props) => {
-    logger.debug(currentxml)
-    logger.debug(lastxml)
-})
+if(DEBUG_MODE){
+    bot.on([/^\/reset$/], async (msg, props) => {
+        user.reset(msg.from, msg.chat)
+        msg.reply.text('Configuration reset successfuly!')
+    })
+}
 
-bot.on([/^\/reset$/], async (msg, props) => {
-    user.reset(msg.from, msg.chat)
-    msg.reply.text('Configuration reset successfuly!')
-})
 async function updateXML() {
     let updated = false
     if (currentxml.length == 0 || lastxml.length == 0) {
@@ -521,12 +505,11 @@ async function checkDifference() {
             let idLastSend = chatValue.notify.idLastSend
             let chatID = chatKey
             chatInfos = await bot.getChat(chatID)
-            entries = getDifferenceFrom(currentxml, idLastSend)
+            entries = await utils.getNewXMLentries(currentxml, idLastSend)
             logger.debug(entries)
             logger.debug('+1')
             if (notifyType != 'all') {
                 let filteredArray = sendFiltered(notifyType, chatID, entries)
-                console.log(filteredArray);
                 if (filteredArray.length == 0) {
                     logger.debug('No release found')
                     tmpNotifymode = 'off'

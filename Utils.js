@@ -61,6 +61,26 @@ class Utils {
             logger.debug(text)
         }
     }
+
+    async getNewXMLentries(currentxml, lastxml) {
+        let needle = lastxml
+        let haystack = currentxml.feed.entry
+
+        // find the index of the last item
+        let needleIndex
+        if (needle != '') {
+            logger.debug('getNewXMLentries: lastxml = ' + lastxml)
+            needleIndex = haystack.findIndex((entry) => entry.id[0] == needle)
+            logger.debug('needleIndex is: ' + needleIndex)
+        } else {
+            logger.debug('getNewXMLentries: lastxml is empty')
+            needleIndex = 5
+        }
+        // create a new array with the new entries
+        let newHaystack = haystack.slice(0, needleIndex)
+        return newHaystack
+    }
+
 }
 
 module.exports = Utils
