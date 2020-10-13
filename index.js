@@ -52,11 +52,11 @@ function getDifferenceFrom(nouveauXML, ancienId) {
     // find the index of the last item
     let needleIndex
     if (needle != '') {
-        utils.debug('getDifferenceFrom: ancienId = ' + ancienId)
+        logger.debug('getDifferenceFrom: ancienId = ' + ancienId)
         needleIndex = haystack.findIndex((entry) => entry.id[0] == needle)
-        utils.debug('needleIndex is: ' + needleIndex)
+        logger.debug('needleIndex is: ' + needleIndex)
     } else {
-        utils.debug('getDifferenceFrom: ancienId is empty')
+        logger.debug('getDifferenceFrom: ancienId is empty')
         needleIndex = 5
     }
     // create a new array with the new entries
@@ -206,7 +206,7 @@ async function sendNews(entries, chatID) {
 }
 
 bot.on('*', async (msg) => {
-    logger.debug('Message-----------------------')
+    logger.debug('Event : Message')
 })
 
 bot.on('/test', async (msg) => {
@@ -381,65 +381,78 @@ bot.on([/^\/reset$/], async (msg, props) => {
     msg.reply.text('Configuration reset successfuly!')
 })
 async function updateXML() {
+    let updated = false
     if (currentxml.length == 0 || lastxml.length == 0) {
         currentxml = await utils.request()
-        lastxml = require('./atom.json')
+        if (DEBUG_MODE) {
+            lastxml = require('./atom.json')
+        } else {
+            lastxml = currentxml
+        }
+        updated = true
+        logger.debug('updatestart')
     } else {
-        lastxml = require('./atom.json')
+        logger.debug(lastxml.feed.entry[0].id[0])
+        logger.debug(currentxml.feed.entry[0].id[0])
+        if (lastxml.feed.entry[0].id[0] != currentxml.feed.entry[0].id[0]) {
+            updated = true
+            logger.debug('updated')
+        }
+        if (DEBUG_MODE == true) {
+            lastxml = require('./atom.json')
+        } else {
+            lastxml = currentxml
+        }
         currentxml = await utils.request()
     }
-    logger.debug('[' + getHour() + ']' + '[bot.info] XML file has been updated ')
+    if (updated == true) {
+        logger.info('[' + getHour() + ']' + '[bot.info] XML file has been updated ')
+    }
 }
 async function checkDifference() {
-    for (const [key_, value_] of Object.entries(user)) {
-        for (const [key, value] of Object.entries(value_)) {
-            if (value.notify.idLastSend == '') {
-                forceCheck = true
-            }
+    for (const [key, value] of Object.entries(user)) {
+        if (value.notify.idLastSend == '') {
+            forceCheck = true
         }
     }
     if (forceCheck == true || lastxml.feed.entry[0].id[0] != currentxml.feed.entry[0].id[0]) {
         let entries = []
         let compteur = 0
 
-        for (const [userKey, userValue] of Object.entries(user)) {
-            for (const [chatKey, chatValue] of Object.entries(userValue)) {
-                let notifymode = chatValue.notify.notifyMode
-                let dayMonth = chatValue.notify.dayMonth
-                let dayWeek = chatValue.notify.dayWeek
-                let dayHour = chatValue.notify.dayHour
-                let idLastSend = chatValue.notify.idLastSend
-                let chatID = chatKey
-                let userID = userKey
-                userInfos = await bot.getChat(userID)
-                chatInfos = await bot.getChat(chatID)
-                entries = getDifferenceFrom(currentxml, idLastSend)
-                switch (notifymode) {
-                    case 'auto':
+        for (const [chatKey, chatValue] of Object.entries(user)) {
+            let notifymode = chatValue.notify.notifyMode
+            let dayMonth = chatValue.notify.dayMonth
+            let dayWeek = chatValue.notify.dayWeek
+            let dayHour = chatValue.notify.dayHour
+            let idLastSend = chatValue.notify.idLastSend
+            let chatID = chatKey
+            chatInfos = await bot.getChat(chatID)
+            entries = getDifferenceFrom(currentxml, idLastSend)
+            switch (notifymode) {
+                case 'auto':
+                    sendNews(entries, chatID)
+                    user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
+                    break
+                case 'daily':
+                    if (dayHour == getHour()) {
                         sendNews(entries, chatID)
-                        user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos, chatInfos)
-                        break
-                    case 'daily':
-                        if (dayHour == getHour()) {
-                            sendNews(entries, chatID)
-                            user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos, chatInfos)
-                        }
-                        break
-                    case 'weekly':
-                        if (dayWeek == new Date().getDay() && dayHour == getHour()) {
-                            sendNews(entries, chatID)
-                            user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos, chatInfos)
-                        }
-                        break
-                    case 'monthly':
-                        if (dayMonth == new Date().getDate() && dayHour == getHour()) {
-                            sendNews(entries, chatID)
-                            user.setIdLastSend(currentxml.feed.entry[0].id[0], userInfos, chatInfos)
-                        }
-                        break
-                    case 'off':
-                        break
-                }
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
+                    }
+                    break
+                case 'weekly':
+                    if (dayWeek == new Date().getDay() && dayHour == getHour()) {
+                        sendNews(entries, chatID)
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
+                    }
+                    break
+                case 'monthly':
+                    if (dayMonth == new Date().getDate() && dayHour == getHour()) {
+                        sendNews(entries, chatID)
+                        user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
+                    }
+                    break
+                case 'off':
+                    break
             }
         }
     }
