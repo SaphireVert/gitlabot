@@ -140,7 +140,6 @@ async function digestFilterMessage(lastxml, msg, nbPage, entries) {
         await msg.reply.text(text, { parseMode: 'Markdown' })
     } else {
         for (i = 0; i < entries.length; i++) {
-            console.log(entries[i])
             text +=
                 '*' +
                 lastxml.feed.entry[entries[i]].title[0] +
@@ -250,7 +249,6 @@ bot.on('/settings', async (msg) => {
 
     let tableString = table.toString()
     tableString = '`' + tableString + '`'
-    console.log(tableString)
 
     msg.reply.text(tableString, { parseMode: 'Markdown' })
 })
@@ -390,7 +388,7 @@ async function updateXML() {
         lastxml = require('./atom.json')
         currentxml = await utils.request()
     }
-    console.log('[' + getHour() + ']' + '[bot.info] XML file has been updated ')
+    logger.debug('[' + getHour() + ']' + '[bot.info] XML file has been updated ')
 }
 async function checkDifference() {
     for (const [key_, value_] of Object.entries(user)) {
@@ -448,7 +446,6 @@ async function checkDifference() {
 }
 async function beginning() {
     await updateXML()
-    // await checkDifference()
     cron.schedule('* * * * *', async () => {
         if (new Date().getMinutes() % 5 == 0) {
             await updateXML()
