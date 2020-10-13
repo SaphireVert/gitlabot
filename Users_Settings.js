@@ -1,10 +1,10 @@
-const http = require("http")
-const https = require("https")
-const fetch = require("node-fetch")
-var xml2js = require("xml2js")
+const http = require('http')
+const https = require('https')
+const fetch = require('node-fetch')
+var xml2js = require('xml2js')
 var parser = new xml2js.Parser(/* options */)
-const fs = require("fs")
-const TeleBot = require("telebot")
+const fs = require('fs')
+const TeleBot = require('telebot')
 
 class Users_Settings {
     constructor(filePath) {
@@ -40,11 +40,11 @@ class Users_Settings {
     async addChat(userInfos, chatInfos) {
         this[userInfos.id][chatInfos.id.toString()] = {
             notify: {
-                notifyMode: "off",
-                dayMonth: "",
-                dayWeek: "",
-                dayHour: "",
-                idLastSend: "",
+                notifyMode: 'off',
+                dayMonth: '',
+                dayWeek: '',
+                dayHour: '',
+                idLastSend: '',
             },
         }
         this.save()
@@ -53,11 +53,11 @@ class Users_Settings {
         this[userInfos.id] = {
             [chatInfos.id.toString()]: {
                 notify: {
-                    notifyMode: "off",
-                    dayMonth: "",
-                    dayWeek: "",
-                    dayHour: "",
-                    idLastSend: "",
+                    notifyMode: 'off',
+                    dayMonth: '',
+                    dayWeek: '',
+                    dayHour: '',
+                    idLastSend: '',
                 },
             },
         }
@@ -66,8 +66,8 @@ class Users_Settings {
 
     async init(userInfos, chatInfos) {
         if (!this[userInfos.id]) {
-            console.log("New user detected: " + userInfos.username)
-            console.log("Adding " + userInfos.username)
+            console.log('New user detected: ' + userInfos.username)
+            console.log('Adding ' + userInfos.username)
             await this.addUser(userInfos, chatInfos)
         }
         if (!this[userInfos.id][chatInfos.id]) {
@@ -77,31 +77,29 @@ class Users_Settings {
 
     save() {
         console.log(this)
-        fs.writeFile("./users_settings.json", JSON.stringify(this, null, 2), function writeJSON(
-            err
-        ) {})
+        fs.writeFile('./users_settings.json', JSON.stringify(this, null, 2), function writeJSON(err) {})
     }
 
     reset(userInfos, chatInfos) {
-        this[userInfos.id] = ""
+        this[userInfos.id] = ''
         this.save()
     }
 
     importData(filePath) {
         if (!fs.existsSync(filePath)) {
             console.log("File settings doesn't exists, creating it")
-            fs.writeFileSync(filePath, "{}")
+            fs.writeFileSync(filePath, '{}')
         } else {
             let file
             try {
                 file = require(filePath)
             } catch {
-                console.log("Invalid JSON file... backuping and recreating file")
+                console.log('Invalid JSON file... backuping and recreating file')
                 // fs.copyFile(filePath, 'backup.json')
-                fs.writeFileSync(filePath, "{}")
+                fs.writeFileSync(filePath, '{}')
                 file = require(filePath)
             }
-            console.log("Charging users data")
+            console.log('Charging users data')
             for (const [key, value] of Object.entries(file)) {
                 this[key] = value
             }
