@@ -46,47 +46,6 @@ var AsciiTable = require('ascii-table')
 const usersDataFolder = './data/users/'
 
 
-async function digestMessage(lastxml, msg, nbPage) {
-    let text = ''
-    if (nbPage == 1) {
-        text =
-            '*' +
-            lastxml.feed.entry[0].title[0] +
-            '*' +
-            '\n\nDate: ' +
-            '_' +
-            lastxml.feed.entry[0].published +
-            '_' +
-            '\n\nAuthor: ' +
-            '_' +
-            lastxml.feed.entry[0].author[0].name[0] +
-            '_' +
-            '\n\nLink: ' +
-            lastxml.feed.entry[0].link[0].$.href +
-            '\n'
-        await msg.reply.text(text, { parseMode: 'Markdown' })
-    } else {
-        for (i = 0; i < nbPage; i++) {
-            text =
-                text +
-                '*' +
-                lastxml.feed.entry[i].title[0] +
-                '*' +
-                '\n\nDate: ' +
-                '_' +
-                lastxml.feed.entry[i].published +
-                '_' +
-                '\n\nAuthor: ' +
-                '_' +
-                lastxml.feed.entry[i].author[0].name[0] +
-                '_' +
-                '\n\nLink: ' +
-                lastxml.feed.entry[i].link[0].$.href +
-                '\n\n-------------------------------------------------------------------\n\n'
-        }
-        await msg.reply.text(text, { parseMode: 'Markdown', webPreview: false })
-    }
-}
 async function digestFilterMessage(lastxml, chatID, nbPage, entries) {
     let text = ''
     if (nbPage == 1) {
@@ -133,16 +92,10 @@ async function notifyUsers() {
 
 
 bot.on('*', async (msg) => {
-    logger.debug('Event : Message')
+    logger.debug('Event detected: ' + msg.text)
 })
 
-if(DEBUG_MODE){
-    bot.on('/test', async (msg) => {
-    user.init(msg.from, msg.chat)
-    checkDifference()
-    utils.sendNews(msg.chat.id)
-})
-}
+
 
 bot.on('/start', (msg) => {
     user.init(msg.from, msg.chat)
@@ -178,6 +131,9 @@ bot.on('/settings', async (msg) => {
         .addRow('Day time', user[msg.chat.id].notify.dayHour == '' ? '-' : user[msg.chat.id].notify.dayHour)
         .addRow('Week day', user[msg.chat.id].notify.dayWeek == '' ? '-' : user[msg.chat.id].notify.dayWeek)
         .addRow('Month day', user[msg.chat.id].notify.dayMonth == '' ? '-' : user[msg.chat.id].notify.dayMonth)
+        if (DEBUG_MODE) {
+            table.addRow('idLastSend', user[msg.chat.id].notify.idLastSend == '' ? 'empty' : 'existing')
+        }
 
     let tableString = table.toString()
     tableString = '`' + tableString + '`'
@@ -204,7 +160,6 @@ bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
         }
 
         utils.sendNews(msg.chat.id, bot, currentxml.feed.entry, nbPage)
-        // digestMessage(currentxml, msg, nbPage)
 
         if (yesOrNo == true) {
             let text = currentxml.feed.entry.length + ' results founds\n'
@@ -225,7 +180,11 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
     } else {
         nbPage = Number(props.match[1])
     }
-    sendFiltered('release', msg.chat.id, nbPage)
+
+    getFiltered(msg.chat.id, 'release', currentxml, nbPage)
+
+    // sendFiltered(msg.chat.id, 'release', nbPage)
+    // getFiltered(msg.chat.id, )
     // let entries = []
     // let compteur = 0
     // for (let i = 0; compteur < nbPage && i < currentxml.feed.entry.length; i++) {
@@ -247,13 +206,15 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
     // }
 })
 
+const sendFiltered = (chatID, keyword, array, nbPage) => {
 
-const sendFiltered = (keyword, chatID, array_OR_nbPage) => {
+}
+
+const getFiltered = (chatID, keyword, array) => {
     logger.debug('Into')
-    if (typeof array_OR_nbPage === 'object' && Array.isArray(array_OR_nbPage)) {
         logger.debug('Array')
-        let arrayToCheck = array_OR_nbPage
-        let nbPage = array_OR_nbPage.length
+        let arrayToCheck = array
+        let nbPage = array.length
         let entries = []
         for (let i = 0; i < nbPage; i++) {
             var sentence = arrayToCheck[i].title[0].toLowerCase()
@@ -262,20 +223,25 @@ const sendFiltered = (keyword, chatID, array_OR_nbPage) => {
             }
         }
         return entries
+}
 
-    } else if (typeof array_OR_nbPage === 'number') {
+const sendFiltereds = (chatID, keyword, nbPage) => {
+    logger.debug('Into')
+    if (typeof array_OR_nbPage === 'number') {
         logger.debug('Integer')
-        let nbPage = array_OR_nbPage
         let entries = []
         let compteur = 0
+        logger.debug(keyword)
         for (let i = 0; compteur < nbPage && i < currentxml.feed.entry.length; i++) {
             var sentence = currentxml.feed.entry[i].title[0].toLowerCase()
             if (sentence.includes(keyword.toLowerCase())) {
                 compteur++
-                entries.push(i)
+                entries.push(currentxml.feed.entry[i])
             }
+            logger.debug(entries)
+            logger.debug("-------------------------")
         }
-        digestFilterMessage(currentxml, chatID, nbPage, entries)
+        utils.sendNews(chatID, bot, entries)
 
         if (compteur == 0) {
             let text = 'No recent results found\n'
@@ -395,12 +361,6 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
     }
 })
 
-if(DEBUG_MODE){
-    bot.on([/^\/reset$/], async (msg, props) => {
-        user.reset(msg.from, msg.chat)
-        msg.reply.text('Configuration reset successfuly!')
-    })
-}
 
 async function updateXML() {
     let updated = false
@@ -454,8 +414,9 @@ async function checkDifference() {
             entries = await utils.getNewXMLentries(currentxml, idLastSend)
             logger.debug(entries)
             logger.debug('+1')
+            notifyType = 'request'
             if (notifyType != 'all') {
-                let filteredArray = sendFiltered(notifyType, chatID, entries)
+                let filteredArray = getFiltered(chatID, notifyType, entries)
                 if (filteredArray.length == 0) {
                     logger.debug('No release found')
                     tmpNotifymode = 'off'
@@ -508,3 +469,28 @@ async function beginning() {
 beginning()
 
 bot.start()
+
+
+
+
+
+
+
+
+
+if(DEBUG_MODE){
+    bot.on('/test', async (msg) => {
+    user.init(msg.from, msg.chat)
+    checkDifference()
+    // utils.sendNews(msg.chat.id)
+    })
+}
+
+if(DEBUG_MODE){
+    bot.on([/^\/reset$/], async (msg, props) => {
+        user.reset(msg.from, msg.chat)
+        user.setNotifyMode('auto', msg.from, msg.chat)
+        user.setNotifyType('review', msg.from, msg.chat)
+        msg.reply.text('Configuration reset successfuly! Type /settings to see the values')
+    })
+}
