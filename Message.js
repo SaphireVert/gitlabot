@@ -1,3 +1,22 @@
+const winston = require('winston')
+const { colorize, combine, timestamp, printf } = winston.format
+
+const logFormat = printf(({ timestamp, level, message }) => {
+    return `${timestamp} ${level}: ${message}`
+})
+
+const logger = winston.createLogger({
+    level: 'debug',
+    format: combine(timestamp(), colorize(), logFormat),
+    transports: [
+        new winston.transports.Console({
+            handleExceptions: true,
+            json: false,
+            colorize: true,
+        }),
+    ],
+})
+
 const http = require('http')
 const https = require('https')
 const fetch = require('node-fetch')
@@ -17,21 +36,21 @@ class Message extends TeleBot {
 
     on(types, fn, opt) {
         super.on(types, fn, opt)
-        // console.log('Yeah')
+        // logger.debug('Yeah')
     }
 
     event(types, data, self) {
         if (types == 'update') {
-            // console.log('new message')
+            // logger.debug('new message')
             // data[0].message.test = 'test'
-            // console.log(data)
-            // console.log('updated-----------')
+            // logger.debug(data)
+            // logger.debug('updated-----------')
         }
         if (types == 'start') {
-            // console.log('STAAART')
-            // console.log(data)
+            // logger.debug('STAAART')
+            // logger.debug(data)
         }
-        // console.log(types);
+        // logger.debug(types);
         // Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1000)
         return super.event(types, data, self)
     }

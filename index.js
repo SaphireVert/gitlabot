@@ -212,6 +212,7 @@ bot.on('*', async (msg) => {
 bot.on('/test', async (msg) => {
     user.init(msg.from, msg.chat)
     checkDifference()
+    logger.error('ujfdvbhhb')
 })
 bot.on('/start', (msg) => {
     user.init(msg.from, msg.chat)
@@ -222,10 +223,10 @@ bot.on('/help', async (msg) => {
     user.init(msg.from, msg.chat)
     let text = ''
     var str =
-        '*Commands list*:\n\n\n/start                                        _Start the bot_\n\n/help                                        _Shows the commands list_\n\n' +
-        '/notify `[notifMode]`           _Set notification mode_\n\n' +
-        '/last `[number]`                      _Lists the latest gitlabot article(s)_\n\n/release `[number]`               _Lists the latest release(s) from Gitlab_ \n\n' +
-        '/settings                                 _Shows the current settings_' +
+        '*Commands list*:\n\n\n/start                                           _Start the bot_\n\n/help                                           _Shows the commands list_\n\n' +
+        '/notify  `<param> [args]`       _Set notification mode_\n\n' +
+        '/last `[number]`                         _Lists the latest gitlabot article(s)_\n\n/release `[number]`                  _Lists the latest release(s) from Gitlab_ \n\n' +
+        '/settings                                    _Shows the current settings_' +
         '\n\n-------------------------------------------------------\n\n_Gitlabot current version:_ ' +
         packagejson.version
     // prettier-ignore
@@ -367,13 +368,25 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
         }
     } else {
         // → error no notify arg
-        msg.reply.text(`/notify command takes arguments, please check /help`)
+        msg.reply.text('`/notify <param> [args]\n\n`' +
+                        '*Parameters*:\n' +
+                        '`- auto`\n' +
+                        '`- off`\n' +
+                        '`- daily`\n' +
+                        '`- weekly`\n' +
+                        '`- monthly`\n\n' +
+
+                        '*Arguments:*\n' +
+                        '`- weekdays`\n' +
+                        '`- monthday`\n' +
+                        '`- daytime`\n\n' +
+                        'exemple: `/notify weekly monday 8:00`', { parseMode: 'Markdown' })
     }
 })
 
 bot.on([/^\/log$/], async (msg, props) => {
-    console.log(currentxml)
-    console.log(lastxml)
+    logger.debug(currentxml)
+    logger.debug(lastxml)
 })
 
 bot.on([/^\/reset$/], async (msg, props) => {

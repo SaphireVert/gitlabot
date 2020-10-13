@@ -1,3 +1,22 @@
+const winston = require('winston')
+const { colorize, combine, timestamp, printf } = winston.format
+
+const logFormat = printf(({ timestamp, level, message }) => {
+    return `${timestamp} ${level}: ${message}`
+})
+
+const logger = winston.createLogger({
+    level: 'debug',
+    format: combine(timestamp(), colorize(), logFormat),
+    transports: [
+        new winston.transports.Console({
+            handleExceptions: true,
+            json: false,
+            colorize: true,
+        }),
+    ],
+})
+
 const http = require('http')
 const https = require('https')
 const fetch = require('node-fetch')
@@ -22,7 +41,7 @@ class Utils {
                 return result
             })
             .catch(function (err) {
-                console.log(err)
+                logger.error(err)
             })
     }
 
@@ -39,7 +58,7 @@ class Utils {
 
     debug(text) {
         if (this.debugMode == true) {
-            console.log(text)
+            logger.debug(text)
         }
     }
 }
