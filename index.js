@@ -130,64 +130,7 @@ async function digestFilterMessage(lastxml, chatID, nbPage, entries) {
 async function notifyUsers() {
     await utils.getNewXMLentries(currentxml, idLastSend)
 }
-async function sendNews(chatID, entries, nbr) {
-    let iterations
-    if (typeof entries === 'undefined') {
-        logger.warn('sendNews: The array is empty')
-        return
-    }
-    if (typeof nbr === 'undefined') {
-        iterations = entries.length
-    } else {
-        iterations = nbr
-    }
-    let text = ''
-    if (iterations >= 1 && iterations <= 5) {
-        for (var i = 0; i < iterations; i++) {
-            text +=
-            '*' +
-            entries[i].title[0] +
-            '*' +
-            '\n\n' +
-            '*' +
-            'Date:            ' +
-            '*' +
-            '_' +
-            entries[i].published +
-            '_' +
-            '\n' +
-            '*' +
-            'Author:        ' +
-            '*' +
-            '_' +
-            entries[i].author[0].name[0] +
-            '_' +
-            '\n\n' +
-            // '*' +
-            // 'Link:          \n' +
-            // '*' +
-            entries[i].link[0].$.href
-            if (i != iterations - 1) {
-                text += '\n\n-------------------------------------------------------------------\n\n'
-            }
-        }
-    } else if (iterations > 5) {
-        if (iterations > 21) {
-            iterations = 21
-        }
-        for (var i = 0; i < iterations; i++) {
-            text +=
-            '*' +
-            entries[i].title[0] +
-            '*' +
-            ' [read more](' + entries[i].link[0].$.href + ')' +
-            '\n\n'
-        }
 
-    } else {
-    }
-    await bot.sendMessage(chatID, text, { parseMode: 'Markdown', webPreview: (iterations == 1 ? true : false) })
-}
 
 bot.on('*', async (msg) => {
     logger.debug('Event : Message')
@@ -197,7 +140,7 @@ if(DEBUG_MODE){
     bot.on('/test', async (msg) => {
     user.init(msg.from, msg.chat)
     checkDifference()
-    sendNews(msg.chat.id)
+    utils.sendNews(msg.chat.id)
 })
 }
 
@@ -260,7 +203,7 @@ bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
             yesOrNo = true
         }
 
-        sendNews(msg.chat.id, currentxml.feed.entry, nbPage)
+        utils.sendNews(msg.chat.id, bot, currentxml.feed.entry, nbPage)
         // digestMessage(currentxml, msg, nbPage)
 
         if (yesOrNo == true) {
@@ -522,24 +465,24 @@ async function checkDifference() {
             }
             switch (tmpNotifymode) {
                 case 'auto':
-                    sendNews(chatID, entries)
+                    utils.sendNews(chatID, bot, entries)
                     user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                     break
                 case 'daily':
                     if (dayHour == utils.getTime()) {
-                        sendNews(chatID, entries)
+                        utils.sendNews(chatID, bot, entries)
                         user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                     }
                     break
                 case 'weekly':
                     if (dayWeek == new Date().getDay() && dayHour == utils.getTime()) {
-                        sendNews(chatID, entries)
+                        utils.sendNews(chatID, bot, entries)
                         user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                     }
                     break
                 case 'monthly':
                     if (dayMonth == new Date().getDate() && dayHour == utils.getTime()) {
-                        sendNews(chatID, entries)
+                        utils.sendNews(chatID, bot, entries)
                         user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                     }
                     break

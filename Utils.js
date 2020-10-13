@@ -96,6 +96,66 @@ class Utils {
             return time.hours + ':' + time.minutes
         }
 
+        async sendNews(chatID, bot, entries, nbr) {
+            let iterations
+            if (typeof entries === 'undefined') {
+                logger.warn('sendNews: The array is empty')
+                return
+            }
+            if (typeof nbr === 'undefined') {
+                iterations = entries.length
+            } else {
+                iterations = nbr
+            }
+            let text = ''
+            if (iterations >= 1 && iterations <= 5) {
+                for (var i = 0; i < iterations; i++) {
+                    text +=
+                    '*' +
+                    entries[i].title[0] +
+                    '*' +
+                    '\n\n' +
+                    '*' +
+                    'Date:            ' +
+                    '*' +
+                    '_' +
+                    entries[i].published +
+                    '_' +
+                    '\n' +
+                    '*' +
+                    'Author:        ' +
+                    '*' +
+                    '_' +
+                    entries[i].author[0].name[0] +
+                    '_' +
+                    '\n\n' +
+                    // '*' +
+                    // 'Link:          \n' +
+                    // '*' +
+                    entries[i].link[0].$.href
+                    if (i != iterations - 1) {
+                        text += '\n\n-------------------------------------------------------------------\n\n'
+                    }
+                }
+            } else if (iterations > 5) {
+                if (iterations > 21) {
+                    iterations = 21
+                }
+                for (var i = 0; i < iterations; i++) {
+                    text +=
+                    '*' +
+                    entries[i].title[0] +
+                    '*' +
+                    '  [read more](' + entries[i].link[0].$.href + ')' +
+                    '\n\n'
+                }
+
+            } else {
+                logger.debug('The nbr argument is negative')
+            }
+            await bot.sendMessage(chatID, text, { parseMode: 'Markdown', webPreview: (iterations == 1 ? true : false) })
+        }
+
 }
 
 module.exports = Utils
