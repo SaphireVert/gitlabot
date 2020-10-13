@@ -80,6 +80,21 @@ class Utils {
         let newHaystack = haystack.slice(0, needleIndex)
         return newHaystack
     }
+    getTime(){
+            //iso 8601
+            process.env.TZ = 'Europe/Amsterdam'
+            var time = {
+                hours: new Date().getHours().toString(),
+                minutes: new Date().getMinutes().toString(),
+            }
+            if (time.hours.length == 1) {
+                time.hours = '0' + time.hours
+            }
+            if (time.minutes.length == 1) {
+                time.minutes = '0' + time.minutes
+            }
+            return time.hours + ':' + time.minutes
+        }
 
 }
 

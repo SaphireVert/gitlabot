@@ -45,22 +45,7 @@ var AsciiTable = require('ascii-table')
 
 const usersDataFolder = './data/users/'
 
-// Pure
-function getHour() {
-    //iso 8601
-    process.env.TZ = 'Europe/Amsterdam'
-    var time = {
-        hours: new Date().getHours().toString(),
-        minutes: new Date().getMinutes().toString(),
-    }
-    if (time.hours.length == 1) {
-        time.hours = '0' + time.hours
-    }
-    if (time.minutes.length == 1) {
-        time.minutes = '0' + time.minutes
-    }
-    return time.hours + ':' + time.minutes
-}
+
 async function digestMessage(lastxml, msg, nbPage) {
     let text = ''
     if (nbPage == 1) {
@@ -145,47 +130,63 @@ async function digestFilterMessage(lastxml, chatID, nbPage, entries) {
 async function notifyUsers() {
     await utils.getNewXMLentries(currentxml, idLastSend)
 }
-async function sendNews(entries, chatID) {
+async function sendNews(chatID, entries, nbr) {
+    let iterations
+    if (typeof entries === 'undefined') {
+        logger.warn('sendNews: The array is empty')
+        return
+    }
+    if (typeof nbr === 'undefined') {
+        iterations = entries.length
+    } else {
+        iterations = nbr
+    }
     let text = ''
-    if (entries.length == 1) {
-        text =
+    if (iterations >= 1 && iterations <= 5) {
+        for (var i = 0; i < iterations; i++) {
+            text +=
             '*' +
-            entries[0].title[0] +
+            entries[i].title[0] +
             '*' +
-            '\n\nDate: ' +
+            '\n\n' +
+            '*' +
+            'Date:            ' +
+            '*' +
             '_' +
-            entries[0].published +
+            entries[i].published +
             '_' +
-            '\n\nAuthor: ' +
+            '\n' +
+            '*' +
+            'Author:        ' +
+            '*' +
             '_' +
-            entries[0].author[0].name[0] +
+            entries[i].author[0].name[0] +
             '_' +
-            '\n\nLink: ' +
-            entries[0].link[0].$.href +
-            '\n'
-        await bot.sendMessage(chatID, text, { parseMode: 'Markdown' })
-    } else if (entries.length > 1) {
-        for (var i = 0; i < entries.length; i++) {
-            text =
-                text +
-                '*' +
-                entries[i].title[0] +
-                '*' +
-                '\n\nDate: ' +
-                '_' +
-                entries[i].published +
-                '_' +
-                '\n\nAuthor: ' +
-                '_' +
-                entries[i].author[0].name[0] +
-                '_' +
-                '\n\nLink: ' +
-                entries[i].link[0].$.href +
-                '\n\n-------------------------------------------------------------------\n\n'
+            '\n\n' +
+            // '*' +
+            // 'Link:          \n' +
+            // '*' +
+            entries[i].link[0].$.href
+            if (i != iterations - 1) {
+                text += '\n\n-------------------------------------------------------------------\n\n'
+            }
         }
-        await bot.sendMessage(chatID, text, { parseMode: 'Markdown', webPreview: false })
+    } else if (iterations > 5) {
+        if (iterations > 21) {
+            iterations = 21
+        }
+        for (var i = 0; i < iterations; i++) {
+            text +=
+            '*' +
+            entries[i].title[0] +
+            '*' +
+            ' [read more](' + entries[i].link[0].$.href + ')' +
+            '\n\n'
+        }
+
     } else {
     }
+    await bot.sendMessage(chatID, text, { parseMode: 'Markdown', webPreview: (iterations == 1 ? true : false) })
 }
 
 bot.on('*', async (msg) => {
@@ -196,6 +197,7 @@ if(DEBUG_MODE){
     bot.on('/test', async (msg) => {
     user.init(msg.from, msg.chat)
     checkDifference()
+    sendNews(msg.chat.id)
 })
 }
 
@@ -258,7 +260,8 @@ bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
             yesOrNo = true
         }
 
-        digestMessage(currentxml, msg, nbPage)
+        sendNews(msg.chat.id, currentxml.feed.entry, nbPage)
+        // digestMessage(currentxml, msg, nbPage)
 
         if (yesOrNo == true) {
             let text = currentxml.feed.entry.length + ' results founds\n'
@@ -482,7 +485,7 @@ async function updateXML() {
         currentxml = await utils.request()
     }
     if (updated == true) {
-        logger.info('[' + getHour() + ']' + '[bot.info] XML file has been updated ')
+        logger.info('[' + utils.getTime() + ']' + '[bot.info] XML file has been updated ')
     }
 }
 async function checkDifference() {
@@ -519,24 +522,24 @@ async function checkDifference() {
             }
             switch (tmpNotifymode) {
                 case 'auto':
-                    sendNews(entries, chatID)
+                    sendNews(chatID, entries)
                     user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                     break
                 case 'daily':
-                    if (dayHour == getHour()) {
-                        sendNews(entries, chatID)
+                    if (dayHour == utils.getTime()) {
+                        sendNews(chatID, entries)
                         user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                     }
                     break
                 case 'weekly':
-                    if (dayWeek == new Date().getDay() && dayHour == getHour()) {
-                        sendNews(entries, chatID)
+                    if (dayWeek == new Date().getDay() && dayHour == utils.getTime()) {
+                        sendNews(chatID, entries)
                         user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                     }
                     break
                 case 'monthly':
-                    if (dayMonth == new Date().getDate() && dayHour == getHour()) {
-                        sendNews(entries, chatID)
+                    if (dayMonth == new Date().getDate() && dayHour == utils.getTime()) {
+                        sendNews(chatID, entries)
                         user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                     }
                     break
