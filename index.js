@@ -211,6 +211,7 @@ bot.on('*', async (msg) => {
 
 bot.on('/test', async (msg) => {
     user.init(msg.from, msg.chat)
+    checkDifference()
 })
 bot.on('/start', (msg) => {
     user.init(msg.from, msg.chat)
@@ -241,10 +242,11 @@ bot.on('/settings', async (msg) => {
     user.init(msg.from, msg.chat)
     var table = new AsciiTable('Settings')
     table
-        .addRow('Notification mode', user[msg.from.id][msg.chat.id].notify.notifyMode)
-        .addRow('Day time', user[msg.from.id][msg.chat.id].notify.dayHour == '' ? '-' : user[msg.from.id][msg.chat.id].notify.dayHour)
-        .addRow('Week day', user[msg.from.id][msg.chat.id].notify.dayWeek == '' ? '-' : user[msg.from.id][msg.chat.id].notify.dayWeek)
-        .addRow('Month day', user[msg.from.id][msg.chat.id].notify.dayMonth == '' ? '-' : user[msg.from.id][msg.chat.id].notify.dayMonth)
+        .addRow('Notification mode', user[msg.chat.id].notify.notifyMode)
+        .addRow('Notification type', user[msg.chat.id].notify.notifyType)
+        .addRow('Day time', user[msg.chat.id].notify.dayHour == '' ? '-' : user[msg.chat.id].notify.dayHour)
+        .addRow('Week day', user[msg.chat.id].notify.dayWeek == '' ? '-' : user[msg.chat.id].notify.dayWeek)
+        .addRow('Month day', user[msg.chat.id].notify.dayMonth == '' ? '-' : user[msg.chat.id].notify.dayMonth)
 
     let tableString = table.toString()
     tableString = '`' + tableString + '`'
@@ -321,12 +323,10 @@ const sendFiltered = (keyword, chatID, array_OR_nbPage) => {
         let arrayToCheck = array_OR_nbPage
         let nbPage = array_OR_nbPage.length
         let entries = []
-        let compteur = 0
-        for (let i = 0; compteur < nbPage && i < currentxml.feed.entry.length; i++) {
-            var sentence = currentxml.feed.entry[i].title[0].toLowerCase()
+        for (let i = 0; i < nbPage; i++) {
+            var sentence = arrayToCheck[i].title[0].toLowerCase()
             if (sentence.includes(keyword.toLowerCase())) {
-                compteur++
-                entries.push(i)
+                entries.push(arrayToCheck[i])
             }
         }
         return entries
@@ -512,14 +512,28 @@ async function checkDifference() {
         let compteur = 0
 
         for (const [chatKey, chatValue] of Object.entries(user)) {
+
             let tmpNotifymode = chatValue.notify.notifyMode
             let dayMonth = chatValue.notify.dayMonth
+            let notifyType = chatValue.notify.notifyType
             let dayWeek = chatValue.notify.dayWeek
             let dayHour = chatValue.notify.dayHour
             let idLastSend = chatValue.notify.idLastSend
             let chatID = chatKey
             chatInfos = await bot.getChat(chatID)
             entries = getDifferenceFrom(currentxml, idLastSend)
+            logger.debug(entries)
+            logger.debug('+1')
+            if (notifyType != 'all') {
+                let filteredArray = sendFiltered(notifyType, chatID, entries)
+                console.log(filteredArray);
+                if (filteredArray.length == 0) {
+                    logger.debug('No release found')
+                    tmpNotifymode = 'off'
+                } else {
+                    entries = filteredArray
+                }
+            }
             switch (tmpNotifymode) {
                 case 'auto':
                     sendNews(entries, chatID)
