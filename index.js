@@ -119,7 +119,7 @@ async function digestMessage(lastxml, msg, nbPage) {
         await msg.reply.text(text, { parseMode: 'Markdown', webPreview: false })
     }
 }
-async function digestFilterMessage(lastxml, msg, nbPage, entries) {
+async function digestFilterMessage(lastxml, chatID, nbPage, entries) {
     let text = ''
     if (nbPage == 1) {
         text =
@@ -137,7 +137,7 @@ async function digestFilterMessage(lastxml, msg, nbPage, entries) {
             '\n\nLink: ' +
             lastxml.feed.entry[entries[0]].link[0].$.href +
             '\n'
-        await msg.reply.text(text, { parseMode: 'Markdown' })
+        await bot.sendMessage(chatID, text, { parseMode: 'Markdown' })
     } else {
         for (i = 0; i < entries.length; i++) {
             text +=
@@ -156,7 +156,7 @@ async function digestFilterMessage(lastxml, msg, nbPage, entries) {
                 lastxml.feed.entry[entries[i]].link[0].$.href +
                 '\n\n-------------------------------------------------------------------\n\n'
         }
-        await msg.reply.text(text, { parseMode: 'Markdown', webPreview: false })
+        await bot.sendMessage(chatID, text, { parseMode: 'Markdown', webPreview: false })
     }
 }
 async function notifyUsers() {
@@ -211,8 +211,6 @@ bot.on('*', async (msg) => {
 
 bot.on('/test', async (msg) => {
     user.init(msg.from, msg.chat)
-    checkDifference()
-    logger.error('ujfdvbhhb')
 })
 bot.on('/start', (msg) => {
     user.init(msg.from, msg.chat)
@@ -287,29 +285,99 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
     var nbPage
     if (typeof props.match[1] === 'undefined') {
         nbPage = 1
+    } else if (props.match[1] == 'all'){
+        nbPage = currentxml.feed.entry.length
+        logger.debug(nbPage)
     } else {
         nbPage = Number(props.match[1])
     }
-    let entries = []
-    let compteur = 0
-    for (let i = 0; compteur < nbPage && i < currentxml.feed.entry.length; i++) {
-        var sentence = currentxml.feed.entry[i].title[0].toLowerCase()
-        var word = 'Release'
-        if (sentence.includes(word.toLowerCase())) {
-            compteur++
-            entries.push(i)
+    sendFiltered('release', msg.chat.id, nbPage)
+    // let entries = []
+    // let compteur = 0
+    // for (let i = 0; compteur < nbPage && i < currentxml.feed.entry.length; i++) {
+    //     var sentence = currentxml.feed.entry[i].title[0].toLowerCase()
+    //     var word = 'Release'
+    //     if (sentence.includes(word.toLowerCase())) {
+    //         compteur++
+    //         entries.push(i)
+    //     }
+    // }
+    // digestFilterMessage(currentxml, msg, nbPage, entries)
+    //
+    // if (compteur == 0) {
+    //     let text = 'No recent results found\n'
+    //     msg.reply.text(text)
+    // } else if (compteur < nbPage) {
+    //     let text = compteur + ' results found\n'
+    //     msg.reply.text(text)
+    // }
+})
+
+
+const sendFiltered = (keyword, chatID, array_OR_nbPage) => {
+    logger.debug('Into')
+    if (typeof array_OR_nbPage === 'object' && Array.isArray(array_OR_nbPage)) {
+        logger.debug('Array')
+        let arrayToCheck = array_OR_nbPage
+        let nbPage = array_OR_nbPage.length
+        let entries = []
+        let compteur = 0
+        for (let i = 0; compteur < nbPage && i < currentxml.feed.entry.length; i++) {
+            var sentence = currentxml.feed.entry[i].title[0].toLowerCase()
+            if (sentence.includes(keyword.toLowerCase())) {
+                compteur++
+                entries.push(i)
+            }
+        }
+        return entries
+
+    } else if (typeof array_OR_nbPage === 'number') {
+        logger.debug('Integer')
+        let nbPage = array_OR_nbPage
+        let entries = []
+        let compteur = 0
+        for (let i = 0; compteur < nbPage && i < currentxml.feed.entry.length; i++) {
+            var sentence = currentxml.feed.entry[i].title[0].toLowerCase()
+            if (sentence.includes(keyword.toLowerCase())) {
+                compteur++
+                entries.push(i)
+            }
+        }
+        digestFilterMessage(currentxml, chatID, nbPage, entries)
+
+        if (compteur == 0) {
+            let text = 'No recent results found\n'
+            bot.sendMessage(chatID, text)
+        } else if (compteur < nbPage) {
+            let text = compteur + ' results found\n'
+            bot.sendMessage(chatID, text)
+        }
+    } else {
+        logger.debug('Not good type')
+    }
+}
+
+
+
+const containsKeyWord = (keyword, stringToCheck) => {
+        if (stringToCheck.includes(keyword.toLowerCase())) {
+            return true
+        } else {
+            return false
+        }
+}
+
+const entriesContainingKeyWord = (keyword, entries) => {
+    let tmpArray = []
+    for (var i = 0; i < entries.length; i++) {
+        if (entries[0].title[0].includes(keyword.toLowerCase())) {
+            return true
+        } else {
+            return false
         }
     }
-    digestFilterMessage(currentxml, msg, nbPage, entries)
+}
 
-    if (compteur == 0) {
-        let text = 'No recent results found\n'
-        msg.reply.text(text)
-    } else if (compteur < nbPage) {
-        let text = compteur + ' results found\n'
-        msg.reply.text(text)
-    }
-})
 
 const validateNotifyMode = (mode) => {
     return /\b(auto)\b|\b(daily)\b|\b(weekly)\b|\b(monthly)\b|\b(off)\b|\b(type)\b/.test(mode.toLowerCase())
@@ -444,7 +512,7 @@ async function checkDifference() {
         let compteur = 0
 
         for (const [chatKey, chatValue] of Object.entries(user)) {
-            let notifymode = chatValue.notify.notifyMode
+            let tmpNotifymode = chatValue.notify.notifyMode
             let dayMonth = chatValue.notify.dayMonth
             let dayWeek = chatValue.notify.dayWeek
             let dayHour = chatValue.notify.dayHour
@@ -452,7 +520,7 @@ async function checkDifference() {
             let chatID = chatKey
             chatInfos = await bot.getChat(chatID)
             entries = getDifferenceFrom(currentxml, idLastSend)
-            switch (notifymode) {
+            switch (tmpNotifymode) {
                 case 'auto':
                     sendNews(entries, chatID)
                     user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
@@ -492,6 +560,7 @@ async function beginning() {
         }
     })
 }
+
 
 beginning()
 
