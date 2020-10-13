@@ -36,6 +36,11 @@ class Users_Settings {
         this[chatInfos.id].notify.notifyMode = value
         this.save()
     }
+    async setNotifyType(value, userInfos, chatInfos) {
+        this.init(userInfos, chatInfos)
+        this[chatInfos.id].notify.notifyType = value
+        this.save()
+    }
     async setDayMonth(value, userInfos, chatInfos) {
         this.init(userInfos, chatInfos)
         this[chatInfos.id].notify.dayMonth = value
@@ -60,6 +65,7 @@ class Users_Settings {
         this[chatInfos.id.toString()] = {
             notify: {
                 notifyMode: 'off',
+                notifyType: 'all',
                 dayMonth: '',
                 dayWeek: '',
                 dayHour: '',
@@ -72,6 +78,7 @@ class Users_Settings {
         this[userInfos.id] = {
             notify: {
                 notifyMode: 'off',
+                notifyType: 'all',
                 dayMonth: '',
                 dayWeek: '',
                 dayHour: '',

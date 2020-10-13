@@ -312,7 +312,11 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
 })
 
 const validateNotifyMode = (mode) => {
-    return /\b(auto)\b|\b(daily)\b|\b(weekly)\b|\b(monthly)\b|\b(off)\b/.test(mode.toLowerCase())
+    return /\b(auto)\b|\b(daily)\b|\b(weekly)\b|\b(monthly)\b|\b(off)\b|\b(type)\b/.test(mode.toLowerCase())
+}
+
+const isNotifyTypeValid = (mode) => {
+    return /\b(all)\b|\b(release)\b/.test(mode.toLowerCase())
 }
 
 const isDayValid = (day) => {
@@ -326,7 +330,14 @@ const isDayMonthValid = (nbDay) => {
 }
 
 bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
+    logger.debug(props.match[1])
     if (typeof props.match[1] !== 'undefined' && validateNotifyMode(props.match[1])) {
+        if (props.match[1] == 'type') {
+            let notifyTypeArg = typeof props.match[2] !== 'undefined' && isNotifyTypeValid(props.match[2]) ? props.match[2] : 'all'
+            user.setNotifyType(props.match[2], msg.from, msg.chat)
+            msg.reply.text('Successfuly set to ' + notifyTypeArg + ' !')
+        }
+
         // get mode = off, auto, daily, weekly, monthly
         if (props.match[1] == 'off' || props.match[1] == 'auto') {
             user.setNotifyMode(props.match[1], msg.from, msg.chat)
