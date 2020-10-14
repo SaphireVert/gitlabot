@@ -90,9 +90,9 @@ async function notifyUsers() {
     await utils.getNewXMLentries(currentxml, idLastSend)
 }
 
-
+// afficher son pseudo, sinon prénom et nom, sinon nom
 bot.on('*', async (msg) => {
-    logger.debug('Event detected: ' + msg.text)
+    logger.info('Event detected: ' + msg.from)
 })
 
 
