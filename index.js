@@ -46,46 +46,6 @@ var AsciiTable = require('ascii-table')
 const usersDataFolder = './data/users/'
 
 
-async function digestFilterMessage(lastxml, chatID, nbPage, entries) {
-    let text = ''
-    if (nbPage == 1) {
-        text =
-            '*' +
-            lastxml.feed.entry[entries[0]].title[0] +
-            '*' +
-            '\n\nDate: ' +
-            '_' +
-            lastxml.feed.entry[entries[0]].published +
-            '_' +
-            '\n\nAuthor: ' +
-            '_' +
-            lastxml.feed.entry[entries[0]].author[0].name[0] +
-            '_' +
-            '\n\nLink: ' +
-            lastxml.feed.entry[entries[0]].link[0].$.href +
-            '\n'
-        await bot.sendMessage(chatID, text, { parseMode: 'Markdown' })
-    } else {
-        for (i = 0; i < entries.length; i++) {
-            text +=
-                '*' +
-                lastxml.feed.entry[entries[i]].title[0] +
-                '*' +
-                '\n\nDate: ' +
-                '_' +
-                lastxml.feed.entry[entries[i]].published +
-                '_' +
-                '\n\nAuthor: ' +
-                '_' +
-                lastxml.feed.entry[entries[i]].author[0].name[0] +
-                '_' +
-                '\n\nLink: ' +
-                lastxml.feed.entry[entries[i]].link[0].$.href +
-                '\n\n-------------------------------------------------------------------\n\n'
-        }
-        await bot.sendMessage(chatID, text, { parseMode: 'Markdown', webPreview: false })
-    }
-}
 async function notifyUsers() {
     await utils.getNewXMLentries(currentxml, idLastSend)
 }
@@ -181,100 +141,10 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
         nbPage = Number(props.match[1])
     }
 
-    getFiltered(msg.chat.id, 'release', currentxml, nbPage)
+    utils.sendNews(msg.chat.id, bot, await utils.getFiltered('release', currentxml.feed.entry), nbPage)
 
-    // sendFiltered(msg.chat.id, 'release', nbPage)
-    // getFiltered(msg.chat.id, )
-    // let entries = []
-    // let compteur = 0
-    // for (let i = 0; compteur < nbPage && i < currentxml.feed.entry.length; i++) {
-    //     var sentence = currentxml.feed.entry[i].title[0].toLowerCase()
-    //     var word = 'Release'
-    //     if (sentence.includes(word.toLowerCase())) {
-    //         compteur++
-    //         entries.push(i)
-    //     }
-    // }
-    // digestFilterMessage(currentxml, msg, nbPage, entries)
-    //
-    // if (compteur == 0) {
-    //     let text = 'No recent results found\n'
-    //     msg.reply.text(text)
-    // } else if (compteur < nbPage) {
-    //     let text = compteur + ' results found\n'
-    //     msg.reply.text(text)
-    // }
 })
 
-const sendFiltered = (chatID, keyword, array, nbPage) => {
-
-}
-
-const getFiltered = (chatID, keyword, array) => {
-    logger.debug('Into')
-        logger.debug('Array')
-        let arrayToCheck = array
-        let nbPage = array.length
-        let entries = []
-        for (let i = 0; i < nbPage; i++) {
-            var sentence = arrayToCheck[i].title[0].toLowerCase()
-            if (sentence.includes(keyword.toLowerCase())) {
-                entries.push(arrayToCheck[i])
-            }
-        }
-        return entries
-}
-
-const sendFiltereds = (chatID, keyword, nbPage) => {
-    logger.debug('Into')
-    if (typeof array_OR_nbPage === 'number') {
-        logger.debug('Integer')
-        let entries = []
-        let compteur = 0
-        logger.debug(keyword)
-        for (let i = 0; compteur < nbPage && i < currentxml.feed.entry.length; i++) {
-            var sentence = currentxml.feed.entry[i].title[0].toLowerCase()
-            if (sentence.includes(keyword.toLowerCase())) {
-                compteur++
-                entries.push(currentxml.feed.entry[i])
-            }
-            logger.debug(entries)
-            logger.debug("-------------------------")
-        }
-        utils.sendNews(chatID, bot, entries)
-
-        if (compteur == 0) {
-            let text = 'No recent results found\n'
-            bot.sendMessage(chatID, text)
-        } else if (compteur < nbPage) {
-            let text = compteur + ' results found\n'
-            bot.sendMessage(chatID, text)
-        }
-    } else {
-        logger.debug('Not good type')
-    }
-}
-
-
-
-const containsKeyWord = (keyword, stringToCheck) => {
-        if (stringToCheck.includes(keyword.toLowerCase())) {
-            return true
-        } else {
-            return false
-        }
-}
-
-const entriesContainingKeyWord = (keyword, entries) => {
-    let tmpArray = []
-    for (var i = 0; i < entries.length; i++) {
-        if (entries[0].title[0].includes(keyword.toLowerCase())) {
-            return true
-        } else {
-            return false
-        }
-    }
-}
 
 
 const validateNotifyMode = (mode) => {
@@ -298,9 +168,11 @@ const isDayMonthValid = (nbDay) => {
 bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
     logger.debug(props.match[1])
     if (typeof props.match[1] !== 'undefined' && validateNotifyMode(props.match[1])) {
+
         if (props.match[1] == 'type') {
+            logger.debug(isNotifyTypeValid(props.match[2]))
             let notifyTypeArg = typeof props.match[2] !== 'undefined' && isNotifyTypeValid(props.match[2]) ? props.match[2] : 'all'
-            user.setNotifyType(props.match[2], msg.from, msg.chat)
+            user.setNotifyType(notifyTypeArg, msg.from, msg.chat)
             msg.reply.text('Successfuly set to ' + notifyTypeArg + ' !')
         }
 
@@ -414,9 +286,8 @@ async function checkDifference() {
             entries = await utils.getNewXMLentries(currentxml, idLastSend)
             logger.debug(entries)
             logger.debug('+1')
-            notifyType = 'request'
             if (notifyType != 'all') {
-                let filteredArray = getFiltered(chatID, notifyType, entries)
+                let filteredArray = await utils.getFiltered(chatID, notifyType, entries)
                 if (filteredArray.length == 0) {
                     logger.debug('No release found')
                     tmpNotifymode = 'off'
