@@ -27,7 +27,7 @@ if (process.argv[2] == '--debug=true') {
 }
 const BOT_TOKEN = secretsFile.BOT_TOKEN
 const DEBUG_MODE = tmpDebugMode
-var cron = require('node-cron')
+
 const fs = require('fs')
 const Utils = require('./Utils.js')
 const Message = require('./Message.js')
@@ -230,22 +230,7 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
 
 
 
-async function beginning() {
-    await utils.updateXML()
-    cron.schedule('* * * * *', async () => {
-        if (new Date().getMinutes() % 5 == 0) {
-            await utils.updateXML()
-            await utils.checkDifference(user, bot)
-        } else {
-            await utils.checkDifference(user, bot)
-        }
-    })
-}
-
-beginning()
-
-// utils.initXML()
-
+utils.initXML()
 bot.start()
 
 

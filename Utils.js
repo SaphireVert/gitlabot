@@ -17,6 +17,7 @@ const logger = winston.createLogger({
     ],
 })
 
+var cron = require('node-cron')
 const http = require('http')
 const https = require('https')
 const fetch = require('node-fetch')
@@ -277,17 +278,17 @@ class Utils {
             }
         }
     }
-    // async initXML() {
-    //     await updateXML()
-    //     cron.schedule('* * * * *', async () => {
-    //         if (new Date().getMinutes() % 5 == 0) {
-    //             await updateXML()
-    //             await checkDifference()
-    //         } else {
-    //             await checkDifference()
-    //         }
-    //     })
-    // }
+    async initXML() {
+        await this.updateXML()
+        cron.schedule('* * * * *', async () => {
+            if (new Date().getMinutes() % 5 == 0) {
+                await this.updateXML()
+                await this.checkDifference()
+            } else {
+                await this.checkDifference()
+            }
+        })
+    }
 }
 
 module.exports = Utils
