@@ -38,7 +38,6 @@ const bot = new Message(BOT_TOKEN)
 var parseString = require('xml2js').parseString
 const packagejson = require('./package.json')
 var listUsers = []
-var forceCheck = false
 var AsciiTable = require('ascii-table')
 
 const usersDataFolder = './data/users/'
@@ -46,7 +45,7 @@ const usersDataFolder = './data/users/'
 
 // afficher son pseudo, sinon prénom et nom, sinon nom
 bot.on('*', async (msg) => {
-    logger.info('Event detected: ' + msg.from)
+    logger.info('Event detected: ' + msg.text)
 })
 
 
@@ -229,76 +228,16 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
 
 
 
-async function checkDifference() {
-    for (const [key, value] of Object.entries(user)) {
-        if (value.notify.idLastSend == '') {
-            forceCheck = true
-        }
-    }
-    if (forceCheck == true || utils.lastxml.feed.entry[0].id[0] != utils.currentxml.feed.entry[0].id[0]) {
-        let entries = []
-        let compteur = 0
 
-        for (const [chatKey, chatValue] of Object.entries(user)) {
-
-            let tmpNotifymode = chatValue.notify.notifyMode
-            let dayMonth = chatValue.notify.dayMonth
-            let notifyType = chatValue.notify.notifyType
-            let dayWeek = chatValue.notify.dayWeek
-            let dayHour = chatValue.notify.dayHour
-            let idLastSend = chatValue.notify.idLastSend
-            let chatID = chatKey
-            chatInfos = await bot.getChat(chatID)
-            entries = await utils.getNewXMLentries(utils.currentxml, idLastSend)
-            logger.debug(entries)
-            logger.debug('+1')
-            if (notifyType != 'all') {
-                let filteredArray = await utils.getFiltered(chatID, notifyType, entries)
-                if (filteredArray.length == 0) {
-                    logger.debug('No release found')
-                    tmpNotifymode = 'off'
-                } else {
-                    entries = filteredArray
-                }
-            }
-            switch (tmpNotifymode) {
-                case 'auto':
-                    utils.sendNews(chatID, bot, entries)
-                    user.setIdLastSend(utils.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
-                    break
-                case 'daily':
-                    if (dayHour == utils.getTime()) {
-                        utils.sendNews(chatID, bot, entries)
-                        user.setIdLastSend(utils.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
-                    }
-                    break
-                case 'weekly':
-                    if (dayWeek == new Date().getDay() && dayHour == utils.getTime()) {
-                        utils.sendNews(chatID, bot, entries)
-                        user.setIdLastSend(utils.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
-                    }
-                    break
-                case 'monthly':
-                    if (dayMonth == new Date().getDate() && dayHour == utils.getTime()) {
-                        utils.sendNews(chatID, bot, entries)
-                        user.setIdLastSend(utils.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
-                    }
-                    break
-                case 'off':
-                    break
-            }
-        }
-    }
-}
 
 async function beginning() {
     await utils.updateXML()
     cron.schedule('* * * * *', async () => {
         if (new Date().getMinutes() % 5 == 0) {
             await utils.updateXML()
-            await checkDifference()
+            await utils.checkDifference(user, bot)
         } else {
-            await checkDifference()
+            await utils.checkDifference(user, bot)
         }
     })
 }
@@ -320,7 +259,7 @@ bot.start()
 if(DEBUG_MODE){
     bot.on('/test', async (msg) => {
     user.init(msg.from, msg.chat)
-    checkDifference()
+    utils.checkDifference(user, bot)
     // utils.sendNews(msg.chat.id)
     })
 }

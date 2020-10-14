@@ -34,6 +34,7 @@ class Utils {
         this.debugMode = debugMode
         this.currentxml = []
         this.lastxml = []
+        this.forceCheck = false
     }
 
     xml2jsobject(data) {
@@ -167,7 +168,7 @@ class Utils {
             text = entries.length + ' results found\n'
             bot.sendMessage(chatID, text)
         } else {
-            logger.debug('Not good type')
+            // logger.debug('Not good type')
         }
 
     }
@@ -207,7 +208,7 @@ class Utils {
             } else {
                 this.lastxml = this.currentxml
             }
-            this.currentxml = await utils.request()
+            this.currentxml = await this.request()
         }
         if (updated == true) {
             logger.info('[' + this.getTime() + ']' + '[bot.info] XML file has been updated ')
@@ -215,6 +216,67 @@ class Utils {
         return this.currentxml, this.lastxml
     }
 
+    async checkDifference(user, bot) {
+        for (const [key, value] of Object.entries(user)) {
+            if (value.notify.idLastSend == '') {
+                this.forceCheck = true
+            }
+        }
+        if (this.forceCheck == true || this.lastxml.feed.entry[0].id[0] != this.currentxml.feed.entry[0].id[0]) {
+            let entries = []
+            let compteur = 0
+
+            for (const [chatKey, chatValue] of Object.entries(user)) {
+
+                let tmpNotifymode = chatValue.notify.notifyMode
+                let dayMonth = chatValue.notify.dayMonth
+                let notifyType = chatValue.notify.notifyType
+                let dayWeek = chatValue.notify.dayWeek
+                let dayHour = chatValue.notify.dayHour
+                let idLastSend = chatValue.notify.idLastSend
+                let chatID = chatKey
+                let chatInfos = await bot.getChat(chatID)
+                entries = await this.getNewXMLentries(this.currentxml, idLastSend)
+                logger.debug(entries)
+                logger.debug('+1')
+                if (notifyType != 'all') {
+                    let filteredArray = await this.getFiltered(notifyType, entries)
+                    if (filteredArray.length == 0) {
+                        logger.debug('No release found')
+                        tmpNotifymode = 'off'
+                    } else {
+                        entries = filteredArray
+                    }
+                }
+                switch (tmpNotifymode) {
+                    case 'auto':
+                        this.sendNews(chatID, bot, entries)
+                        user.setIdLastSend(this.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
+                        break
+                    case 'daily':
+                        if (dayHour == this.getTime()) {
+                            this.sendNews(chatID, bot, entries)
+                            user.setIdLastSend(this.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
+                        }
+                        break
+                    case 'weekly':
+                        if (dayWeek == new Date().getDay() && dayHour == this.getTime()) {
+                            this.sendNews(chatID, bot, entries)
+                            user.setIdLastSend(this.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
+                        }
+                        break
+                    case 'monthly':
+                        if (dayMonth == new Date().getDate() && dayHour == this.getTime()) {
+                            this.sendNews(chatID, bot, entries)
+                            user.setIdLastSend(this.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
+                        }
+                        break
+                    case 'off':
+                        break
+                }
+            }
+        }
+    }
     // async initXML() {
     //     await updateXML()
     //     cron.schedule('* * * * *', async () => {
