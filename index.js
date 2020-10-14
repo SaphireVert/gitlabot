@@ -32,23 +32,21 @@ const fs = require('fs')
 const Utils = require('./Utils.js')
 const Message = require('./Message.js')
 const Users_Settings = require('./Users_Settings.js')
-var user = new Users_Settings('./users_settings.json')
-const utils = new Utils(DEBUG_MODE)
 const bot = new Message(BOT_TOKEN)
+var user = new Users_Settings('./users_settings.json', bot)
+const utils = new Utils(DEBUG_MODE)
 var parseString = require('xml2js').parseString
 const packagejson = require('./package.json')
 var listUsers = []
 var AsciiTable = require('ascii-table')
 
 const usersDataFolder = './data/users/'
-
+var cron = require('node-cron')
 
 // afficher son pseudo, sinon prénom et nom, sinon nom
 bot.on('*', async (msg) => {
     logger.info('Event detected: ' + msg.text)
 })
-
-
 
 bot.on('/start', (msg) => {
     user.init(msg.from, msg.chat)
@@ -84,9 +82,9 @@ bot.on('/settings', async (msg) => {
         .addRow('Day time', user[msg.chat.id].notify.dayHour == '' ? '-' : user[msg.chat.id].notify.dayHour)
         .addRow('Week day', user[msg.chat.id].notify.dayWeek == '' ? '-' : user[msg.chat.id].notify.dayWeek)
         .addRow('Month day', user[msg.chat.id].notify.dayMonth == '' ? '-' : user[msg.chat.id].notify.dayMonth)
-        if (DEBUG_MODE) {
-            table.addRow('idLastSend', user[msg.chat.id].notify.idLastSend == '' ? 'empty' : 'existing')
-        }
+    if (DEBUG_MODE) {
+        table.addRow('idLastSend', user[msg.chat.id].notify.idLastSend == '' ? 'empty' : 'existing')
+    }
 
     let tableString = table.toString()
     tableString = '`' + tableString + '`'
@@ -127,7 +125,7 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
     var nbPage
     if (typeof props.match[1] === 'undefined') {
         nbPage = 1
-    } else if (props.match[1] == 'all'){
+    } else if (props.match[1] == 'all') {
         nbPage = utils.currentxml.feed.entry.length
         logger.debug(nbPage)
     } else {
@@ -135,10 +133,7 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
     }
 
     utils.sendNews(msg.chat.id, bot, await utils.getFiltered('release', utils.currentxml.feed.entry), nbPage)
-
 })
-
-
 
 const validateNotifyMode = (mode) => {
     return /\b(auto)\b|\b(daily)\b|\b(weekly)\b|\b(monthly)\b|\b(off)\b|\b(type)\b/.test(mode.toLowerCase())
@@ -161,11 +156,10 @@ const isDayMonthValid = (nbDay) => {
 bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
     logger.debug(props.match[1])
     if (typeof props.match[1] !== 'undefined' && validateNotifyMode(props.match[1])) {
-
         if (props.match[1] == 'type') {
             logger.debug(isNotifyTypeValid(props.match[2]))
             let notifyTypeArg = typeof props.match[2] !== 'undefined' && isNotifyTypeValid(props.match[2]) ? props.match[2] : 'all'
-            user.setNotifyType(notifyTypeArg, msg.from, msg.chat)
+            user.setNotifyType(notifyTypeArg, msg.from, msg.chat, bot)
             msg.reply.text('Successfuly set to ' + notifyTypeArg + ' !')
         }
 
@@ -210,46 +204,47 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
         }
     } else {
         // → error no notify arg
-        msg.reply.text('`/notify <param> [args]\n\n`' +
-                        '*Parameters*:\n' +
-                        '`- auto`\n' +
-                        '`- off`\n' +
-                        '`- daily`\n' +
-                        '`- weekly`\n' +
-                        '`- monthly`\n\n' +
-
-                        '*Arguments:*\n' +
-                        '`- weekdays`\n' +
-                        '`- monthday`\n' +
-                        '`- daytime`\n\n' +
-                        'exemple: `/notify weekly monday 8:00`', { parseMode: 'Markdown' })
+        msg.reply.text(
+            '`/notify <param> [args]\n\n`' +
+                '*Parameters*:\n' +
+                '`- auto`\n' +
+                '`- off`\n' +
+                '`- daily`\n' +
+                '`- weekly`\n' +
+                '`- monthly`\n\n' +
+                '*Arguments:*\n' +
+                '`- weekdays`\n' +
+                '`- monthday`\n' +
+                '`- daytime`\n\n' +
+                'example: `/notify weekly monday 08:00`',
+            { parseMode: 'Markdown' }
+        )
     }
 })
 
-
-
-
-
-utils.initXML()
-bot.start()
-
-
-
-
-
-
-
-
-
-if(DEBUG_MODE){
-    bot.on('/test', async (msg) => {
-    user.init(msg.from, msg.chat)
-    utils.checkDifference(user, bot)
-    // utils.sendNews(msg.chat.id)
+async function initXML() {
+    await utils.updateXML()
+    cron.schedule('* * * * *', async () => {
+        if (new Date().getMinutes() % 5 == 0) {
+            await utils.updateXML()
+            await utils.checkDifference(user, bot)
+        } else {
+            await utils.checkDifference(user, bot)
+        }
     })
 }
 
-if(DEBUG_MODE){
+initXML()
+bot.start()
+
+if (DEBUG_MODE) {
+    bot.on('/test', async (msg) => {
+        user.init(msg.from, msg.chat)
+        utils.checkDifference(user, bot)
+    })
+}
+
+if (DEBUG_MODE) {
     bot.on([/^\/reset$/], async (msg, props) => {
         user.reset(msg.from, msg.chat)
         user.setNotifyMode('auto', msg.from, msg.chat)

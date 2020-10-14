@@ -17,7 +17,6 @@ const logger = winston.createLogger({
     ],
 })
 
-var cron = require('node-cron')
 const http = require('http')
 const https = require('https')
 const fetch = require('node-fetch')
@@ -84,21 +83,21 @@ class Utils {
         let newHaystack = haystack.slice(0, needleIndex)
         return newHaystack
     }
-    getTime(){
-            //iso 8601
-            process.env.TZ = 'Europe/Amsterdam'
-            var time = {
-                hours: new Date().getHours().toString(),
-                minutes: new Date().getMinutes().toString(),
-            }
-            if (time.hours.length == 1) {
-                time.hours = '0' + time.hours
-            }
-            if (time.minutes.length == 1) {
-                time.minutes = '0' + time.minutes
-            }
-            return time.hours + ':' + time.minutes
+    getTime() {
+        //iso 8601
+        process.env.TZ = 'Europe/Amsterdam'
+        var time = {
+            hours: new Date().getHours().toString(),
+            minutes: new Date().getMinutes().toString(),
         }
+        if (time.hours.length == 1) {
+            time.hours = '0' + time.hours
+        }
+        if (time.minutes.length == 1) {
+            time.minutes = '0' + time.minutes
+        }
+        return time.hours + ':' + time.minutes
+    }
 
     async sendNews(chatID, bot, entries, nbr) {
         let iterations
@@ -111,56 +110,49 @@ class Utils {
             iterations = entries.length
             logger.debug('entries.length = ' + entries.length)
         } else if (nbr > entries.length) {
-                iterations = entries.length
+            iterations = entries.length
         } else {
             iterations = nbr
         }
-
 
         let text = ''
         if (iterations >= 1 && iterations <= 5) {
             for (var i = 0; i < iterations; i++) {
                 text +=
-                '*' +
-                entries[i].title[0] +
-                '*' +
-                '\n\n' +
-                '*' +
-                'Date:            ' +
-                '*' +
-                '_' +
-                entries[i].published +
-                '_' +
-                '\n' +
-                '*' +
-                'Author:        ' +
-                '*' +
-                '_' +
-                entries[i].author[0].name[0] +
-                '_' +
-                '\n\n' +
-                // '*' +
-                // 'Link:          \n' +
-                // '*' +
-                entries[i].link[0].$.href
+                    '*' +
+                    entries[i].title[0] +
+                    '*' +
+                    '\n\n' +
+                    '*' +
+                    'Date:            ' +
+                    '*' +
+                    '_' +
+                    entries[i].published +
+                    '_' +
+                    '\n' +
+                    '*' +
+                    'Author:        ' +
+                    '*' +
+                    '_' +
+                    entries[i].author[0].name[0] +
+                    '_' +
+                    '\n\n' +
+                    // '*' +
+                    // 'Link:          \n' +
+                    // '*' +
+                    entries[i].link[0].$.href
                 if (i != iterations - 1) {
                     text += '\n\n-------------------------------------------------------------------\n\n'
                 }
             }
         } else if (iterations > 5) {
             for (var i = 0; i < iterations; i++) {
-                text +=
-                '*' +
-                entries[i].title[0] +
-                '*' +
-                '  [read more](' + entries[i].link[0].$.href + ')' +
-                '\n\n'
+                text += '*' + entries[i].title[0] + '*' + '  [read more](' + entries[i].link[0].$.href + ')' + '\n\n'
             }
-
         } else {
             logger.debug('sendNews: The nbr argument is negative')
         }
-        await bot.sendMessage(chatID, text, { parseMode: 'Markdown', webPreview: (iterations == 1 ? true : false) })
+        await bot.sendMessage(chatID, text, { parseMode: 'Markdown', webPreview: iterations == 1 ? true : false })
 
         if (entries.length == 0) {
             text = 'No recent results found\n'
@@ -171,19 +163,18 @@ class Utils {
         } else {
             // logger.debug('Not good type')
         }
-
     }
 
-    async getFiltered (keyword, array) {
-            let nbPage = array.length
-            let entries = []
-            for (let i = 0; i < nbPage; i++) {
-                var sentence = array[i].title[0].toLowerCase()
-                if (sentence.includes(keyword.toLowerCase())) {
-                    entries.push(array[i])
-                }
+    async getFiltered(keyword, array) {
+        let nbPage = array.length
+        let entries = []
+        for (let i = 0; i < nbPage; i++) {
+            var sentence = array[i].title[0].toLowerCase()
+            if (sentence.includes(keyword.toLowerCase())) {
+                entries.push(array[i])
             }
-            return entries
+        }
+        return entries
     }
 
     async updateXML() {
@@ -228,7 +219,6 @@ class Utils {
             let compteur = 0
 
             for (const [chatKey, chatValue] of Object.entries(user)) {
-
                 let tmpNotifymode = chatValue.notify.notifyMode
                 let dayMonth = chatValue.notify.dayMonth
                 let notifyType = chatValue.notify.notifyType
@@ -277,17 +267,6 @@ class Utils {
                 }
             }
         }
-    }
-    async initXML() {
-        await this.updateXML()
-        cron.schedule('* * * * *', async () => {
-            if (new Date().getMinutes() % 5 == 0) {
-                await this.updateXML()
-                await this.checkDifference()
-            } else {
-                await this.checkDifference()
-            }
-        })
     }
 }
 

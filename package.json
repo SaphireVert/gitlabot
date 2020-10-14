@@ -6,13 +6,13 @@
   "dependencies": {
     "ascii-table": "0.0.9",
     "node-cron": "^2.0.3",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "telebot": "^1.4.1",
     "winston": "^3.3.3",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.5"
   },
   "scripts": {
     "prestart": "npx prettier --write '*.js'",
