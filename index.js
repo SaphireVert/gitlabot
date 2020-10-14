@@ -154,6 +154,7 @@ const isDayMonthValid = (nbDay) => {
 }
 
 bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
+    user.init(msg.from, msg.chat)
     logger.debug(props.match[1])
     if (typeof props.match[1] !== 'undefined' && validateNotifyMode(props.match[1])) {
         if (props.match[1] == 'type') {
