@@ -10,8 +10,8 @@ up:
 up-dev:
 	docker-compose -f docker-compose-dev.yml up
 
-up-test:
-	npm run-script start.test
+# up-test:
+# 	npm run-script start.test
 
 tag:
 	npm version patch

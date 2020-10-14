@@ -1,8 +1,8 @@
 const winston = require('winston')
-const { colorize, combine, timestamp, printf } = winston.format
+const { colorize, combine, timestamp, printf, test } = winston.format
 
-const logFormat = printf(({ timestamp, level, message }) => {
-    return `${timestamp} ${level}: ${message}`
+const logFormat = printf(({ timestamp, level, message, test }) => {
+    return `${timestamp} ${level}: ${message} ${test}`
 })
 
 const logger = winston.createLogger({
@@ -16,6 +16,8 @@ const logger = winston.createLogger({
         }),
     ],
 })
+
+logger.debug('message', 'test')
 
 const http = require('http')
 const https = require('https')
@@ -203,7 +205,7 @@ class Utils {
             this.currentxml = await this.request()
         }
         if (updated == true) {
-            logger.info('[' + this.getTime() + ']' + '[bot.info] XML file has been updated ')
+            logger.info('XML file has been updated ')
         }
         return this.currentxml, this.lastxml
     }
