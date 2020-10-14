@@ -37,18 +37,12 @@ const utils = new Utils(DEBUG_MODE)
 const bot = new Message(BOT_TOKEN)
 var parseString = require('xml2js').parseString
 const packagejson = require('./package.json')
-var lastxml = []
-var currentxml = []
 var listUsers = []
 var forceCheck = false
 var AsciiTable = require('ascii-table')
 
 const usersDataFolder = './data/users/'
 
-
-async function notifyUsers() {
-    await utils.getNewXMLentries(currentxml, idLastSend)
-}
 
 // afficher son pseudo, sinon prénom et nom, sinon nom
 bot.on('*', async (msg) => {
@@ -108,21 +102,21 @@ bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
         nbPage = Number(props.match[1])
     }
     try {
-        let test = lastxml.feed.entry
+        let test = utils.lastxml.feed.entry
     } catch (error) {
-        currentxml.feed = { entry: [] }
+        utils.currentxml.feed = { entry: [] }
     }
     let yesOrNo = false
-    if (currentxml.feed.entry.length) {
-        if (nbPage > currentxml.feed.entry.length) {
-            nbPage = currentxml.feed.entry.length
+    if (utils.currentxml.feed.entry.length) {
+        if (nbPage > utils.currentxml.feed.entry.length) {
+            nbPage = utils.currentxml.feed.entry.length
             yesOrNo = true
         }
 
-        utils.sendNews(msg.chat.id, bot, currentxml.feed.entry, nbPage)
+        utils.sendNews(msg.chat.id, bot, utils.currentxml.feed.entry, nbPage)
 
         if (yesOrNo == true) {
-            let text = currentxml.feed.entry.length + ' results founds\n'
+            let text = utils.currentxml.feed.entry.length + ' results founds\n'
             msg.reply.text(text)
         }
     } else {
@@ -135,13 +129,13 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
     if (typeof props.match[1] === 'undefined') {
         nbPage = 1
     } else if (props.match[1] == 'all'){
-        nbPage = currentxml.feed.entry.length
+        nbPage = utils.currentxml.feed.entry.length
         logger.debug(nbPage)
     } else {
         nbPage = Number(props.match[1])
     }
 
-    utils.sendNews(msg.chat.id, bot, await utils.getFiltered('release', currentxml.feed.entry), nbPage)
+    utils.sendNews(msg.chat.id, bot, await utils.getFiltered('release', utils.currentxml.feed.entry), nbPage)
 
 })
 
@@ -234,42 +228,14 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
 })
 
 
-async function updateXML() {
-    let updated = false
-    if (currentxml.length == 0 || lastxml.length == 0) {
-        currentxml = await utils.request()
-        if (DEBUG_MODE) {
-            lastxml = require('./atom.json')
-        } else {
-            lastxml = currentxml
-        }
-        updated = true
-        logger.debug('updatestart')
-    } else {
-        logger.debug(lastxml.feed.entry[0].id[0])
-        logger.debug(currentxml.feed.entry[0].id[0])
-        if (lastxml.feed.entry[0].id[0] != currentxml.feed.entry[0].id[0]) {
-            updated = true
-            logger.debug('updated')
-        }
-        if (DEBUG_MODE == true) {
-            lastxml = require('./atom.json')
-        } else {
-            lastxml = currentxml
-        }
-        currentxml = await utils.request()
-    }
-    if (updated == true) {
-        logger.info('[' + utils.getTime() + ']' + '[bot.info] XML file has been updated ')
-    }
-}
+
 async function checkDifference() {
     for (const [key, value] of Object.entries(user)) {
         if (value.notify.idLastSend == '') {
             forceCheck = true
         }
     }
-    if (forceCheck == true || lastxml.feed.entry[0].id[0] != currentxml.feed.entry[0].id[0]) {
+    if (forceCheck == true || utils.lastxml.feed.entry[0].id[0] != utils.currentxml.feed.entry[0].id[0]) {
         let entries = []
         let compteur = 0
 
@@ -283,7 +249,7 @@ async function checkDifference() {
             let idLastSend = chatValue.notify.idLastSend
             let chatID = chatKey
             chatInfos = await bot.getChat(chatID)
-            entries = await utils.getNewXMLentries(currentxml, idLastSend)
+            entries = await utils.getNewXMLentries(utils.currentxml, idLastSend)
             logger.debug(entries)
             logger.debug('+1')
             if (notifyType != 'all') {
@@ -298,24 +264,24 @@ async function checkDifference() {
             switch (tmpNotifymode) {
                 case 'auto':
                     utils.sendNews(chatID, bot, entries)
-                    user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
+                    user.setIdLastSend(utils.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                     break
                 case 'daily':
                     if (dayHour == utils.getTime()) {
                         utils.sendNews(chatID, bot, entries)
-                        user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
+                        user.setIdLastSend(utils.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                     }
                     break
                 case 'weekly':
                     if (dayWeek == new Date().getDay() && dayHour == utils.getTime()) {
                         utils.sendNews(chatID, bot, entries)
-                        user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
+                        user.setIdLastSend(utils.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                     }
                     break
                 case 'monthly':
                     if (dayMonth == new Date().getDate() && dayHour == utils.getTime()) {
                         utils.sendNews(chatID, bot, entries)
-                        user.setIdLastSend(currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
+                        user.setIdLastSend(utils.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                     }
                     break
                 case 'off':
@@ -324,11 +290,12 @@ async function checkDifference() {
         }
     }
 }
+
 async function beginning() {
-    await updateXML()
+    await utils.updateXML()
     cron.schedule('* * * * *', async () => {
         if (new Date().getMinutes() % 5 == 0) {
-            await updateXML()
+            await utils.updateXML()
             await checkDifference()
         } else {
             await checkDifference()
@@ -336,8 +303,9 @@ async function beginning() {
     })
 }
 
-
 beginning()
+
+// utils.initXML()
 
 bot.start()
 

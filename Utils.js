@@ -32,6 +32,8 @@ const TeleBot = require('telebot')
 class Utils {
     constructor(debugMode) {
         this.debugMode = debugMode
+        this.currentxml = []
+        this.lastxml = []
     }
 
     xml2jsobject(data) {
@@ -181,6 +183,49 @@ class Utils {
             }
             return entries
     }
+
+    async updateXML() {
+        let updated = false
+        if (this.currentxml.length == 0 || this.lastxml.length == 0) {
+            this.currentxml = await this.request()
+            if (this.debugMode) {
+                this.lastxml = require('./atom.json')
+            } else {
+                this.lastxml = this.currentxml
+            }
+            updated = true
+            logger.debug('updatestart')
+        } else {
+            logger.debug(this.lastxml.feed.entry[0].id[0])
+            logger.debug(this.currentxml.feed.entry[0].id[0])
+            if (this.lastxml.feed.entry[0].id[0] != this.currentxml.feed.entry[0].id[0]) {
+                updated = true
+                logger.debug('updated')
+            }
+            if (this.debugMode == true) {
+                this.lastxml = require('./atom.json')
+            } else {
+                this.lastxml = this.currentxml
+            }
+            this.currentxml = await utils.request()
+        }
+        if (updated == true) {
+            logger.info('[' + this.getTime() + ']' + '[bot.info] XML file has been updated ')
+        }
+        return this.currentxml, this.lastxml
+    }
+
+    // async initXML() {
+    //     await updateXML()
+    //     cron.schedule('* * * * *', async () => {
+    //         if (new Date().getMinutes() % 5 == 0) {
+    //             await updateXML()
+    //             await checkDifference()
+    //         } else {
+    //             await checkDifference()
+    //         }
+    //     })
+    // }
 }
 
 module.exports = Utils
