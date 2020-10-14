@@ -6,7 +6,7 @@ const logFormat = printf(({ timestamp, level, message }) => {
 })
 
 const logger = winston.createLogger({
-    level: 'debug',
+    level: 'info',
     format: combine(timestamp(), colorize(), logFormat),
     transports: [
         new winston.transports.Console({

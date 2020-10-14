@@ -1,16 +1,22 @@
 var secretsFile = require('./secrets.json')
 const BOT_TOKEN = secretsFile.BOT_TOKEN
+var tmpDebugMode = false
+if (process.argv[2] == '--debug=true') {
+    console.log('----- DEBUG MODE -----')
+    tmpDebugMode = true
+}
+var logLevel = 'info'
 const DEBUG_MODE = tmpDebugMode
+if (DEBUG_MODE) {
+    logLevel = 'debug'
+}
+
 const winston = require('winston')
 const { colorize, combine, timestamp, printf } = winston.format
 
 const logFormat = printf(({ timestamp, level, message }) => {
     return `${timestamp} ${level}: ${message}`
 })
-var logLevel = 'info'
-if (DEBUG_MODE) {
-    logLevel = 'debug'
-}
 const logger = winston.createLogger({
     level: logLevel,
     format: combine(timestamp(), colorize(), logFormat),
@@ -23,13 +29,6 @@ const logger = winston.createLogger({
     ],
 })
 
-var tmpDebugMode
-if (process.argv[2] == '--debug=true') {
-    logger.warn('----- DEBUG MODE -----')
-    tmpDebugMode = true
-} else {
-    tmpDebugMode = false
-}
 
 const fs = require('fs')
 const Utils = require('./Utils.js')
