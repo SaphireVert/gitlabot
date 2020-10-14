@@ -16,7 +16,7 @@
   },
   "scripts": {
     "prestart": "npx prettier --write '*.js'",
-    "start": "npm i && node index.js",
+    "start": "npm i && npm update && node index.js",
     "start.dev": "npm ci && nodemon index.js --debug=true",
     "start.devmon": "nodemon index.js --debug=true --exec \"npx prettier --write '*.js' && node\""
   },
