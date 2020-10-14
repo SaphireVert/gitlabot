@@ -8,3 +8,4 @@ app/secrets-dev.json
 app/secrets.json
 .tern-project
 data*
+ansible/ansible-deps-cache

@@ -1,0 +1,6 @@
+- name: configure
+  hosts: all
+  roles:
+    - name: configure
+  tags:
+    - configure
