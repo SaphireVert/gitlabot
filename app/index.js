@@ -138,7 +138,7 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
 })
 
 const validateNotifyMode = (mode) => {
-    return /\b(auto)\b|\b(daily)\b|\b(weekly)\b|\b(monthly)\b|\b(off)\b|\b(type)\b/.test(mode.toLowerCase())
+    return /\b(auto)\b|\b(daily)\b|\b(weekly)\b|\b(monthly)\b|\b(off)\b|\b(type)\b|\b(mode)\b/.test(mode.toLowerCase())
 }
 
 const isNotifyTypeValid = (mode) => {
@@ -159,6 +159,7 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
     user.init(msg.from, msg.chat)
     logger.debug(props.match[1])
     if (typeof props.match[1] !== 'undefined' && validateNotifyMode(props.match[1])) {
+
         if (props.match[1] == 'type') {
             logger.debug(isNotifyTypeValid(props.match[2]))
             let notifyTypeArg = typeof props.match[2] !== 'undefined' && isNotifyTypeValid(props.match[2]) ? props.match[2] : 'all'
@@ -167,44 +168,49 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
         }
 
         // get mode = off, auto, daily, weekly, monthly
-        if (props.match[1] == 'off' || props.match[1] == 'auto') {
-            user.setNotifyMode(props.match[1], msg.from, msg.chat)
-            user.setDayMonth('-', msg.from, msg.chat)
-            user.setDayWeek('-', msg.from, msg.chat)
-            msg.reply.text('Successfuly set to ' + props.match[1] + ' !')
+        if (props.match[1] == 'mode') {
+
+            // get mode = off, auto, daily, weekly, monthly
+            if (props.match[2] == 'off' || props.match[2] == 'auto') {
+                user.setNotifyMode(props.match[2], msg.from, msg.chat)
+                user.setDayMonth('-', msg.from, msg.chat)
+                user.setDayWeek('-', msg.from, msg.chat)
+                msg.reply.text('Successfuly set to ' + props.match[2] + ' !')
+            }
+
+            // got  daily (or weekly, monthly)
+            if (props.match[2] == 'daily') {
+                // TODO: handle non-valid hours argument
+                let dailyArg = typeof props.match[3] !== 'undefined' && isHourValid(props.match[3]) ? props.match[3] : '08:00'
+                user.setNotifyMode(props.match[2], msg.from, msg.chat)
+                user.setDayHour(dailyArg, msg.from, msg.chat)
+                user.setDayMonth('-', msg.from, msg.chat)
+                user.setDayWeek('-', msg.from, msg.chat)
+                msg.reply.text(`Successfuly set to ${props.match[2]}, ${dailyArg} !`)
+            }
+
+            // got weekly
+            if (props.match[2] == 'weekly') {
+                let weeklyArgDay = typeof props.match[3] !== 'undefined' && isDayValid(props.match[3]) ? props.match[3].toLowerCase() : 'monday'
+                let weeklyArgHour = typeof props.match[4] !== 'undefined' && isHourValid(props.match[4]) ? props.match[4] : '08:00'
+                user.setNotifyMode(props.match[2], msg.from, msg.chat)
+                user.setDayHour(weeklyArgHour, msg.from, msg.chat)
+                user.setDayWeek(weeklyArgDay, msg.from, msg.chat)
+                user.setDayMonth('-', msg.from, msg.chat)
+                msg.reply.text(`Successfuly set to ${props.match[2]}, ${weeklyArgDay}, ${weeklyArgHour} !`)
+            }
+            // got monthly
+            if (props.match[2] == 'monthly') {
+                let monthlyArgDay = typeof props.match[3] !== 'undefined' && isDayMonthValid(props.match[3]) ? props.match[3].toLowerCase() : '23'
+                let monthlyArgHour = typeof props.match[4] !== 'undefined' && isHourValid(props.match[4]) ? props.match[4] : '08:00'
+                user.setNotifyMode(props.match[2], msg.from, msg.chat)
+                user.setDayHour(monthlyArgHour, msg.from, msg.chat)
+                user.setDayMonth(monthlyArgDay, msg.from, msg.chat)
+                user.setDayWeek('-', msg.from, msg.chat)
+                msg.reply.text(`Successfuly set to ${props.match[2]}, ${monthlyArgDay}, ${monthlyArgHour} !`)
+            }
         }
 
-        // got  daily (or weekly, monthly)
-        if (props.match[1] == 'daily') {
-            // TODO: handle non-valid hours argument
-            let dailyArg = typeof props.match[2] !== 'undefined' && isHourValid(props.match[2]) ? props.match[2] : '08:00'
-            user.setNotifyMode(props.match[1], msg.from, msg.chat)
-            user.setDayHour(dailyArg, msg.from, msg.chat)
-            user.setDayMonth('-', msg.from, msg.chat)
-            user.setDayWeek('-', msg.from, msg.chat)
-            msg.reply.text(`Successfuly set to ${props.match[1]}, ${dailyArg} !`)
-        }
-
-        // got weekly
-        if (props.match[1] == 'weekly') {
-            let weeklyArgDay = typeof props.match[2] !== 'undefined' && isDayValid(props.match[2]) ? props.match[2].toLowerCase() : 'monday'
-            let weeklyArgHour = typeof props.match[3] !== 'undefined' && isHourValid(props.match[3]) ? props.match[3] : '08:00'
-            user.setNotifyMode(props.match[1], msg.from, msg.chat)
-            user.setDayHour(weeklyArgHour, msg.from, msg.chat)
-            user.setDayWeek(weeklyArgDay, msg.from, msg.chat)
-            user.setDayMonth('-', msg.from, msg.chat)
-            msg.reply.text(`Successfuly set to ${props.match[1]}, ${weeklyArgDay}, ${weeklyArgHour} !`)
-        }
-        // got monthly
-        if (props.match[1] == 'monthly') {
-            let monthlyArgDay = typeof props.match[2] !== 'undefined' && isDayMonthValid(props.match[2]) ? props.match[2].toLowerCase() : '23'
-            let monthlyArgHour = typeof props.match[3] !== 'undefined' && isHourValid(props.match[3]) ? props.match[3] : '08:00'
-            user.setNotifyMode(props.match[1], msg.from, msg.chat)
-            user.setDayHour(monthlyArgHour, msg.from, msg.chat)
-            user.setDayMonth(monthlyArgDay, msg.from, msg.chat)
-            user.setDayWeek('-', msg.from, msg.chat)
-            msg.reply.text(`Successfuly set to ${props.match[1]}, ${monthlyArgDay}, ${monthlyArgHour} !`)
-        }
     } else {
         // → error no notify arg
         msg.reply.text(
