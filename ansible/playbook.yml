@@ -4,3 +4,10 @@
     - name: configure
   tags:
     - configure
+
+- name: gitlabot
+  hosts: all
+  roles:
+    - name: gitlabot
+  tags:
+    - gitlabot

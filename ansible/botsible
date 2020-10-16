@@ -103,7 +103,7 @@ set -e
 platform_check
 case "$mode" in
     ansible-playbook)
-        ansible-playbook $playbook_flags $(inventories) "${ansible_args[@]}" \
+        ansible-playbook -vvv $playbook_flags $(inventories) "${ansible_args[@]}" \
                          -e "botsible_cwd=$OLDPWD" \
                          playbook.yml
         ;;

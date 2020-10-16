@@ -1,0 +1,35 @@
+---
+- name: ensure that gitlabot repository is present
+  git:
+    repo: 'https://github.com/saphirevert/gitlabot'
+    dest: /srv/gitlabot
+    version: feature/ansible
+
+- name: Copy secrets from keybase
+  copy:
+    src: /keybase/team/epfl_gitlabot/secrets.json
+    dest: /srv/gitlabot/app/secrets.json
+
+- name: Start docker container gitlabot
+  docker_compose:
+    project_src: /srv/gitlabot
+    state: present
+    build: yes
+    nocache: yes
+    pull: yes
+    files:
+      - docker-compose-prod.yml
+# - name: Start docker container gitlabot
+#   docker_compose:
+#     project_name: gitlabot
+#     definition:
+#       version: "3"
+#       services:
+#         node:
+#           image: "node"
+#           working_dir: "/gitlabot"
+#           volumes:
+#             - "{{ playbook_dir }}/app:/gitlabot"
+#           expose:
+#             - "8081"
+#           command: "npm run-script start.dev"
