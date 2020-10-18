@@ -68,7 +68,7 @@ bot.on('/help', async (msg) => {
     let text = ''
     var str =
         '*Commands list*:\n\n\n/start                                           _Start the bot_\n\n/help                                           _Shows the commands list_\n\n' +
-        '/notify  `<param> [args]`       _Set notification mode_\n\n' +
+        '/notify  `<type|mode> <param> [args]`    _Set notification settings_\n\n' +
         '/last `[number]`                         _Lists the latest gitlabot article(s)_\n\n/release `[number]`                  _Lists the latest release(s) from Gitlab_ \n\n' +
         '/settings                                    _Shows the current settings_' +
         '\n\n-------------------------------------------------------\n\n_Gitlabot current version:_ ' +
@@ -230,7 +230,7 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
                 '`- weekdays`\n' +
                 '`- monthday`\n' +
                 '`- daytime`\n\n' +
-                'example: `/notify weekly monday 08:00`',
+                'example: `/notify mode weekly monday 08:00`',
             { parseMode: 'Markdown' }
         )
     }

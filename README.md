@@ -18,7 +18,7 @@
 |-----------------------------------|-------------------------------------------------------------------------------|
 | `/start`                          | Display welcome message                                                       |
 | `/help`                           | Display a list of available commands                                          |
-| `/notify <param> [args]` <br> **Parameters**: <br> - auto  <br> - off <br> - daily <br> - weekly <br> - monthly <br> <br> **Arguments**: <br> - weekdays <br> - monthday <br> - daytime | Set the notification rules                                                    |
+| `/notify <type\|mode> <param> [args]` <br> **Parameters**: <br> - auto  <br> - off <br> - daily <br> - weekly <br> - monthly <br> <br> **Arguments**: <br> - weekdays <br> - monthday <br> - daytime | Set the notification rules                                                    |
 | `/last [nbr]`                     | Display the latest [nbr] blog info (default is 1), regardless of the type     |
 | `/release [nbr]`                  | Display the latest [nbr] release info (default is 1)                          |
 | `/settings`                       | Display the current settings values                                           |
@@ -32,16 +32,16 @@
 2. Clone the repository
 
 ```sh
-git clone git@github.com:SaphireVert/gitlabot.git
+git clone git@github.com:SaphireVert/gitlabot.git && cd gitlabot
 ```
 
 3. Install npm packages
 
 ```sh
-npm install telebot
+npm install
 ```
 
-4. Rename sample_secrets.json in secrets.json and replace the bot token value by your own bot token. You can also define it in your ENV by naming your ENV: BOT_TOKEN
+4. Rename sample_secrets.json in secrets.json and replace the bot token value by your own bot token.
 
 5. Start the bot
 
@@ -55,11 +55,11 @@ make up
     culture, insights, company, security, unfiltered
     * 💡 Add buttons to choose the type ?
     * 💡 /release, /culture, etc.
-   * Admin can ask the server for a dump of the storage file that contains every
-     users preference
-   * Other use case: what if a user want to have the new release notification as
-     soon as possible but want a weekly digest of security and engineering posts ?
-   * /research ?
+    * Admin can ask the server for a dump of the storage file that contains every
+      users preference
+    * Other use case: what if a user want to have the new release notification as
+      soon as possible but want a weekly digest of security and engineering posts ?
+    * /research ?
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
