@@ -17,6 +17,13 @@ const logger = winston.createLogger({
     ],
 })
 
+var tmpDebugMode = false
+if (process.argv[2] == '--debug=true') {
+    console.log('----- DEBUG MODE -----')
+    tmpDebugMode = true
+}
+const DEBUG_MODE = tmpDebugMode
+
 const http = require('http')
 const https = require('https')
 const fetch = require('node-fetch')
@@ -24,6 +31,9 @@ var xml2js = require('xml2js')
 var parser = new xml2js.Parser(/* options */)
 const fs = require('fs')
 const TeleBot = require('telebot')
+const Utils = require('./Utils.js')
+const utils = new Utils(DEBUG_MODE)
+
 
 class Users_Settings {
     constructor(filePath) {
@@ -90,11 +100,11 @@ class Users_Settings {
 
     async init(userInfos, chatInfos) {
         if (!this[userInfos.id]) {
-            logger.info('New user detected: ' + userInfos.username)
-            logger.info('Adding ' + userInfos.username)
+            logger.info(utils.getUser(userInfos) + ' ' + ((chatInfos.type == 'group') ? chatInfos.title : (chatInfos.type)) + ': Adding user')
             await this.addUser(userInfos, chatInfos)
         }
         if (!this[chatInfos.id]) {
+            logger.info(utils.getUser(userInfos) + ' ' + ((chatInfos.type == 'group') ? chatInfos.title : (chatInfos.type)) + ': Adding group')
             await this.addChat(userInfos, chatInfos)
         }
     }
@@ -110,14 +120,14 @@ class Users_Settings {
 
     importData(filePath) {
         if (!fs.existsSync(filePath)) {
-            logger.info("File settings doesn't exists, creating it")
+            logger.warn("File settings doesn't exists, creating it")
             fs.writeFileSync(filePath, '{}')
         } else {
             let file
             try {
                 file = require(filePath)
             } catch {
-                logger.info('Invalid JSON file... backuping and recreating file')
+                logger.warn('Invalid JSON file... backuping and recreating file')
                 // fs.copyFile(filePath, 'backup.json')
                 fs.writeFileSync(filePath, '{}')
                 file = require(filePath)

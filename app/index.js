@@ -29,12 +29,18 @@ const logger = winston.createLogger({
     ],
 })
 
-
 const fs = require('fs')
 const Utils = require('./Utils.js')
 const Message = require('./Message.js')
 const Users_Settings = require('./Users_Settings.js')
-const bot = new Message(BOT_TOKEN)
+const bot = new Message({
+    token: BOT_TOKEN,
+    usePlugins: ['askUser', 'commandButton'],
+    pluginFolder: '../plugins/',
+    pluginConfig: {
+        // Plugin configs
+    },
+})
 var user = new Users_Settings('./users_settings.json', bot)
 const utils = new Utils(DEBUG_MODE)
 var parseString = require('xml2js').parseString
@@ -45,9 +51,11 @@ var AsciiTable = require('ascii-table')
 const usersDataFolder = './data/users/'
 var cron = require('node-cron')
 
+
+
 // afficher son pseudo, sinon prénom et nom, sinon nom
 bot.on('*', async (msg) => {
-    logger.info('Event detected: ' + msg.text)
+    logger.info(utils.getUser(msg.from) + ' ' + ((msg.chat.type == 'group') ? msg.chat.title : (msg.chat.type)) + ': Event detected: ' + msg.text)
 })
 
 bot.on('/start', (msg) => {
@@ -159,7 +167,6 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
     user.init(msg.from, msg.chat)
     logger.debug(props.match[1])
     if (typeof props.match[1] !== 'undefined' && validateNotifyMode(props.match[1])) {
-
         if (props.match[1] == 'type') {
             logger.debug(isNotifyTypeValid(props.match[2]))
             let notifyTypeArg = typeof props.match[2] !== 'undefined' && isNotifyTypeValid(props.match[2]) ? props.match[2] : 'all'
@@ -169,7 +176,6 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
 
         // get mode = off, auto, daily, weekly, monthly
         if (props.match[1] == 'mode') {
-
             // get mode = off, auto, daily, weekly, monthly
             if (props.match[2] == 'off' || props.match[2] == 'auto') {
                 user.setNotifyMode(props.match[2], msg.from, msg.chat)
@@ -210,11 +216,10 @@ bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
                 msg.reply.text(`Successfuly set to ${props.match[2]}, ${monthlyArgDay}, ${monthlyArgHour} !`)
             }
         }
-
     } else {
         // → error no notify arg
         msg.reply.text(
-            '`/notify <param> [args]\n\n`' +
+            '`/notify <mode|type> <param> [args]\n\n`' +
                 '*Parameters*:\n' +
                 '`- auto`\n' +
                 '`- off`\n' +
@@ -246,12 +251,19 @@ async function initXML() {
 initXML()
 bot.start()
 
-logger.debug('----------------------------------------------------')
-
 if (DEBUG_MODE) {
     bot.on('/test', async (msg) => {
-        user.init(msg.from, msg.chat)
-        utils.checkDifference(user, bot)
+
+        let replyMarkup = bot.keyboard([
+            [bot.button('contact', 'Your contact'), bot.button('location', 'Your location')],
+            ['/back', '/hide']
+        ], {resize: true});
+
+        return bot.sendMessage(msg.from.id, 'Button example.', {replyMarkup});
+
+        bot.on('*', async (msg) => {
+
+        })
     })
 }
 

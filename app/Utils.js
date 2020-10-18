@@ -270,6 +270,20 @@ class Utils {
             }
         }
     }
+
+    getUser(userInfos){
+        if (typeof userInfos.username !== 'undefined') {
+            logger.debug('Display username')
+            return userInfos.username
+        } else if (typeof userInfos.first_name !== 'undefined' && typeof userInfos.last_name !== 'undefined'){
+            logger.debug('Display first_name and last_name')
+            return userInfos.first_name + ' ' + userInfos.last_name
+        } else {
+            logger.debug('Just display first_name')
+            return userInfos.first_name
+        }
+
+    }
 }
 
 module.exports = Utils
