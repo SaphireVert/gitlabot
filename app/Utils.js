@@ -141,8 +141,6 @@ class Utils {
                         '*' +
                         `[${entries[i].author[0].name[0]}](https://about.gitlab.com/company/team/)`
                     }
-                    text +=
-                    '\n\n'
                 if (i != iterations - 1) {
                     text += '\n\n-------------------------------------------------------------------\n\n'
                 }
