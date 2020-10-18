@@ -125,6 +125,7 @@ class Utils {
                     '*' +
                     entries[i].title[0] +
                     '*' +
+                    '  [read more](' + entries[i].link[0].$.href + ')' +
                     '\n\n' +
                     '*' +
                     'Date:            ' +
@@ -138,15 +139,10 @@ class Utils {
                         '*' +
                         'Author:        ' +
                         '*' +
-                        '_' +
-                        entries[i].author[0].name[0] +
-                        '_'
+                        `[${entries[i].author[0].name[0]}](https://about.gitlab.com/company/team/)`
                     }
-                    '\n\n' +
-                    // '*' +
-                    // 'Link:          \n' +
-                    // '*' +
-                    entries[i].link[0].$.href
+                    text +=
+                    '\n\n'
                 if (i != iterations - 1) {
                     text += '\n\n-------------------------------------------------------------------\n\n'
                 }
