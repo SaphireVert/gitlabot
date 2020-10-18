@@ -103,6 +103,7 @@ class Utils {
 
     async sendNews(chatID, bot, entries, nbr) {
         let iterations
+
         logger.debug('nbr = ' + nbr)
         if (typeof entries === 'undefined') {
             logger.warn('sendNews: The array is empty')
@@ -130,14 +131,17 @@ class Utils {
                     '*' +
                     '_' +
                     entries[i].published +
-                    '_' +
-                    '\n' +
-                    '*' +
-                    'Author:        ' +
-                    '*' +
-                    '_' +
-                    entries[i].author[0].name[0] +
-                    '_' +
+                    '_'
+                    if (entries[i].author[0].name[0] != '') {
+                        text +=
+                        '\n' +
+                        '*' +
+                        'Author:        ' +
+                        '*' +
+                        '_' +
+                        entries[i].author[0].name[0] +
+                        '_'
+                    }
                     '\n\n' +
                     // '*' +
                     // 'Link:          \n' +

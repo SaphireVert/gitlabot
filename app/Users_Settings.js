@@ -19,7 +19,6 @@ const logger = winston.createLogger({
 
 var tmpDebugMode = false
 if (process.argv[2] == '--debug=true') {
-    console.log('----- DEBUG MODE -----')
     tmpDebugMode = true
 }
 const DEBUG_MODE = tmpDebugMode

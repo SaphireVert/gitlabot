@@ -102,6 +102,7 @@ bot.on('/settings', async (msg) => {
     msg.reply.text(tableString, { parseMode: 'Markdown' })
 })
 bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
+
     var nbPage
     if (typeof props.match[1] === 'undefined' || Number(props.match[1] <= 1)) {
         nbPage = 1
@@ -137,7 +138,6 @@ bot.on([/^\/release$/, /^\/release (.+)$/], async (msg, props) => {
         nbPage = 1
     } else if (props.match[1] == 'all') {
         nbPage = utils.currentxml.feed.entry.length
-        logger.debug(nbPage)
     } else {
         nbPage = Number(props.match[1])
     }
