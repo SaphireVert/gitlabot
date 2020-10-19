@@ -49,19 +49,6 @@ npm install
 make up
 ```
 
-## ToDo
-
-  * `/last 5 type` where type in [release (default), engineering, open source,
-    culture, insights, company, security, unfiltered
-    * 💡 Add buttons to choose the type ?
-    * 💡 /release, /culture, etc.
-    * Admin can ask the server for a dump of the storage file that contains every
-      users preference
-    * Other use case: what if a user want to have the new release notification as
-      soon as possible but want a weekly digest of security and engineering posts ?
-    * /research ?
-
-
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
