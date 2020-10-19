@@ -1,6 +1,6 @@
 {
   "name": "gitlabot",
-  "version": "0.0.16",
+  "version": "1.0.0",
   "description": "A gitlab update bot",
   "main": "index.js",
   "dependencies": {

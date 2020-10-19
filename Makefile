@@ -14,7 +14,7 @@ up-dev:
 # 	cd app/; npm run-script start.test
 
 tag:
-	npm version patch app/package.json
+	cd app/; npm version patch
 
 # push:
 # 	git push origin [tag]

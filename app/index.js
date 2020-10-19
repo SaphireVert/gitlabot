@@ -104,7 +104,7 @@ bot.on('/settings', async (msg) => {
 bot.on([/^\/last$/, /^\/last (.+)$/], async (msg, props) => {
 
     var nbPage
-    if (typeof props.match[1] === 'undefined' || Number(props.match[1] <= 1)) {
+    if (typeof props.match[1] === 'undefined' || typeof props.match[1] !== 'number' || Number(props.match[1] <= 1)) {
         nbPage = 1
     } else {
         nbPage = Number(props.match[1])
