@@ -18,8 +18,8 @@
 cd "$(dirname "$0")"; cd "$(/bin/pwd)"
 
 # One can override these on the command line
-playbook_flags="-e play_update=yes -e play_backup=yes -e play_create_or_restore=yes"
-ansible_flags="-e @roles/wordpress-instance/vars/main.yml"
+playbook_flags=""
+ansible_flags=""
 
 git_current_branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
 case "$git_current_branch" in
@@ -44,19 +44,10 @@ platform_check () {
     if ! test -f ansible-deps-cache/.versions 2>/dev/null; then
         curl https://raw.githubusercontent.com/epfl-si/ansible.suitcase/master/install.sh | \
             SUITCASE_DIR=$PWD/ansible-deps-cache SUITCASE_ANSIBLE_REQUIREMENTS=requirements.yml \
-                        SUITCASE_PIP_EXTRA="requests bcrypt passlib" bash -x
+                        SUITCASE_PIP_EXTRA="" bash -x
     fi
     export PATH="$PWD/ansible-deps-cache/bin:$PATH"
     export ANSIBLE_ROLES_PATH="$PWD/ansible-deps-cache/roles"
-
-    # oc_check
-}
-
-oc_check () {
-  if ! oc projects >/dev/null 2>&1; then
-    echo "Please login to openshift:"
-    oc login
-  fi
 }
 
 inventory_mode="test"
@@ -70,8 +61,6 @@ inventories () {
 
 ###########################################################################
 
-export WWP_NAMESPACES=wwp-test
-
 mode=ansible-playbook
 
 declare -a ansible_args
@@ -79,7 +68,6 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
         --prod)
             inventory_mode="test_and_prod"
-            WWP_NAMESPACES="wwp-test,wwp"
             shift ;;
         --wp-veritas)
             # Ignored for backward compatibility
