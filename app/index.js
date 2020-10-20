@@ -54,8 +54,15 @@ var cron = require('node-cron')
 
 
 // afficher son pseudo, sinon prénom et nom, sinon nom
-bot.on('*', async (msg) => {
+bot.on([/^\/(.+)$/], async (msg, props) => {
     logger.info(utils.getUser(msg.from) + ' ' + ((msg.chat.type == 'group') ? msg.chat.title : (msg.chat.type)) + ': Event detected: ' + msg.text)
+
+
+    var lastTest = /\b(last)\b|\b(daily)\b/.test(props.match[0].toLowerCase())
+    if (lastTest) {
+        logger.debug(`Fonctionne: ${props.match[0]}`)
+    }
+    // /\b(auto)\b|\b(daily)\b|\b(weekly)\b|\b(monthly)\b|\b(off)\b|\b(type)\b|\b(mode)\b/
 })
 
 bot.on('/start', (msg) => {
