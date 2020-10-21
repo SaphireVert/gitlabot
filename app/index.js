@@ -65,7 +65,7 @@ async function mainProgramm(){
         if (lastTest) {
             logger.debug(`Fonctionne: ${props.match[0]}`)
         }
-        // logger.debug(`${props.match[0]}\n ${props.match[1]}\n ${props.match[2]}\n ${props.match[3]}\n ${props.match[4]}`)
+        // logger.debug(`${props.match[0]}\n ${props.match[1]}\n ${props.match[2]}\n ${argument3}\n ${argument4}`)
         // /\b(auto)\b|\b(daily)\b|\b(weekly)\b|\b(monthly)\b|\b(off)\b|\b(type)\b|\b(mode)\b/
     })
 
@@ -116,6 +116,7 @@ async function mainProgramm(){
 
     bot.on(new RegExp(`(^\/last)(@${botName})?\s?(.+)?$`), async (msg, props) => {
         var nbPage = Number(props.match[3])
+        console.debug(props)
         if (typeof nbPage === 'undefined' || typeof nbPage !== 'number' || Number(nbPage <= 1)) {
             logger.debug('entré')
             nbPage = 1
@@ -171,57 +172,70 @@ async function mainProgramm(){
         return /^([0-31])$/.test(nbDay)
     }
 
-    bot.on(/^\/notify\s?(\S*)?\s?(\S*)?\s?(\S*)?/, async (msg, props) => {
+    const OKOKOK = `^\/notify(@${botName})? ?([a-zA-Z0-9_]*) ?([a-zA-Z0-9_]*) ?([a-zA-Z0-9_]*) ?([a-zA-Z0-9_]*)`
+    const saphireTest = `^\/notify(@${botName})? ?(mode|type)? ?(auto|daily|weekly|monthly|off|all|release)? ?([a-zA-Z0-9_:]*)? ?([a-zA-Z0-9_:]*)?`
+    const saphireTestorigin = `^\/notify(@${botName})?\s?(.+)?\s?(.+)?$`
+    //bot.on(new RegExp(`^\/notify\s?(\w*)`), async (msg, props) => {
+    bot.on(new RegExp(saphireTest), async (msg, props) => {
         user.init(msg.from, msg.chat)
-        logger.debug(props.match[1])
-        if (typeof props.match[1] !== 'undefined' && validateNotifyMode(props.match[1])) {
-            if (props.match[1] == 'type') {
-                logger.debug(isNotifyTypeValid(props.match[2]))
-                let notifyTypeArg = typeof props.match[2] !== 'undefined' && isNotifyTypeValid(props.match[2]) ? props.match[2] : 'all'
+        console.debug(props)
+
+        var modeOrType = props.match[2]
+        var argument2 = props.match[3]
+        var argument3 = props.match[4]
+        var argument4 = props.match[5]
+
+        logger.debug(modeOrType)
+        if (typeof modeOrType !== 'undefined' && validateNotifyMode(modeOrType)) {
+            if (modeOrType == 'type') {
+                logger.debug(isNotifyTypeValid(argument2))
+                let notifyTypeArg = typeof argument2 !== 'undefined' && isNotifyTypeValid(argument2) ? argument2 : 'all'
                 user.setNotifyType(notifyTypeArg, msg.from, msg.chat, bot)
                 msg.reply.text('Successfuly set to ' + notifyTypeArg + ' !')
             }
 
             // get mode = off, auto, daily, weekly, monthly
-            if (props.match[1] == 'mode') {
+            if (modeOrType == 'mode') {
                 // get mode = off, auto, daily, weekly, monthly
-                if (props.match[2] == 'off' || props.match[2] == 'auto') {
-                    user.setNotifyMode(props.match[2], msg.from, msg.chat)
+                if (argument2 == 'off' || argument2 == 'auto') {
+                    user.setNotifyMode(argument2, msg.from, msg.chat)
                     user.setDayMonth('-', msg.from, msg.chat)
                     user.setDayWeek('-', msg.from, msg.chat)
-                    msg.reply.text('Successfuly set to ' + props.match[2] + ' !')
+                    msg.reply.text('Successfuly set to ' + argument2 + ' !')
                 }
 
                 // got  daily (or weekly, monthly)
-                if (props.match[2] == 'daily') {
+                if (argument2 == 'daily') {
                     // TODO: handle non-valid hours argument
-                    let dailyArg = typeof props.match[3] !== 'undefined' && isHourValid(props.match[3]) ? props.match[3] : '08:00'
-                    user.setNotifyMode(props.match[2], msg.from, msg.chat)
+                    let dailyArg = typeof argument3 !== 'undefined' && isHourValid(argument3) ? argument3 : '08:00'
+                    user.setNotifyMode(argument2, msg.from, msg.chat)
                     user.setDayHour(dailyArg, msg.from, msg.chat)
                     user.setDayMonth('-', msg.from, msg.chat)
                     user.setDayWeek('-', msg.from, msg.chat)
-                    msg.reply.text(`Successfuly set to ${props.match[2]}, ${dailyArg} !`)
+                    msg.reply.text(`Successfuly set to ${argument2}, ${dailyArg} !`)
                 }
 
                 // got weekly
-                if (props.match[2] == 'weekly') {
-                    let weeklyArgDay = typeof props.match[3] !== 'undefined' && isDayValid(props.match[3]) ? props.match[3].toLowerCase() : 'monday'
-                    let weeklyArgHour = typeof props.match[4] !== 'undefined' && isHourValid(props.match[4]) ? props.match[4] : '08:00'
-                    user.setNotifyMode(props.match[2], msg.from, msg.chat)
+                if (argument2 == 'weekly') {
+                    logger.debug(argument4)
+                    let weeklyArgDay = typeof argument3 !== 'undefined' && isDayValid(argument3) ? argument3.toLowerCase() : 'monday'
+                    let weeklyArgHour = typeof argument4 !== 'undefined' && isHourValid(argument4) ? argument4 : '08:00'
+                    user.setNotifyMode(argument2, msg.from, msg.chat)
+                    logger.debug(weeklyArgHour)
                     user.setDayHour(weeklyArgHour, msg.from, msg.chat)
                     user.setDayWeek(weeklyArgDay, msg.from, msg.chat)
                     user.setDayMonth('-', msg.from, msg.chat)
-                    msg.reply.text(`Successfuly set to ${props.match[2]}, ${weeklyArgDay}, ${weeklyArgHour} !`)
+                    msg.reply.text(`Successfuly set to ${argument2}, ${weeklyArgDay}, ${weeklyArgHour} !`)
                 }
                 // got monthly
-                if (props.match[2] == 'monthly') {
-                    let monthlyArgDay = typeof props.match[3] !== 'undefined' && isDayMonthValid(props.match[3]) ? props.match[3].toLowerCase() : '23'
-                    let monthlyArgHour = typeof props.match[4] !== 'undefined' && isHourValid(props.match[4]) ? props.match[4] : '08:00'
-                    user.setNotifyMode(props.match[2], msg.from, msg.chat)
+                if (argument2 == 'monthly') {
+                    let monthlyArgDay = typeof argument3 !== 'undefined' && isDayMonthValid(argument3) ? argument3.toLowerCase() : '23'
+                    let monthlyArgHour = typeof argument4 !== 'undefined' && isHourValid(argument4) ? argument4 : '08:00'
+                    user.setNotifyMode(argument2, msg.from, msg.chat)
                     user.setDayHour(monthlyArgHour, msg.from, msg.chat)
                     user.setDayMonth(monthlyArgDay, msg.from, msg.chat)
                     user.setDayWeek('-', msg.from, msg.chat)
-                    msg.reply.text(`Successfuly set to ${props.match[2]}, ${monthlyArgDay}, ${monthlyArgHour} !`)
+                    msg.reply.text(`Successfuly set to ${argument2}, ${monthlyArgDay}, ${monthlyArgHour} !`)
                 }
             }
         } else {
@@ -279,7 +293,8 @@ async function mainProgramm(){
         bot.on([/^\/reset$/], async (msg, props) => {
             user.reset(msg.from, msg.chat)
             user.setNotifyMode('auto', msg.from, msg.chat)
-            user.setNotifyType('review', msg.from, msg.chat)
+            user.setNotifyType('all', msg.from, msg.chat)
+            user.setIdLastSend('', msg.from, msg.chat)
             msg.reply.text('Configuration reset successfuly! Type /settings to see the values')
         })
     }
