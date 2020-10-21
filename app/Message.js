@@ -44,9 +44,12 @@ class Message extends TeleBot {
             // logger.debug('new message')
             // data[0].message.test = 'test'
             // logger.debug(data)
+            // console.debug(data)
             // logger.debug('updated-----------')
         }
         if (types == 'start') {
+            // console.debug(data)
+            // data.text = '/notify'
             // logger.debug('STAAART')
             // logger.debug(data)
         }

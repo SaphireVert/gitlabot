@@ -11,7 +11,6 @@ async function mainProgramm(){
     if (DEBUG_MODE) {
         logLevel = 'debug'
     }
-
     const winston = require('winston')
     const { colorize, combine, timestamp, printf } = winston.format
 
@@ -178,7 +177,6 @@ async function mainProgramm(){
     //bot.on(new RegExp(`^\/notify\s?(\w*)`), async (msg, props) => {
     bot.on(new RegExp(saphireTest), async (msg, props) => {
         user.init(msg.from, msg.chat)
-        console.debug(props)
 
         var modeOrType = props.match[2]
         var argument2 = props.match[3]
@@ -261,12 +259,12 @@ async function mainProgramm(){
     async function initXML() {
         await utils.updateXML()
         cron.schedule('* * * * *', async () => {
-            if (new Date().getMinutes() % 5 == 0) {
-                await utils.updateXML()
-                await utils.checkDifference(user, bot)
-            } else {
-                await utils.checkDifference(user, bot)
-            }
+                if (new Date().getMinutes() % 5 == 0) {
+                    await utils.updateXML()
+                    await utils.checkDifference(user, bot)
+                } else {
+                    await utils.checkDifference(user, bot)
+                }
         })
     }
 

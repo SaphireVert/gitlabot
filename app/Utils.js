@@ -17,7 +17,7 @@ const logger = winston.createLogger({
     ],
 })
 
-logger.debug('message', 'test')
+// logger.debug('message', 'test')
 
 const http = require('http')
 const https = require('https')
@@ -37,6 +37,7 @@ class Utils {
         this.currentxml = []
         this.lastxml = []
         this.forceCheck = false
+        this.dayWeekEnum = {monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 7}
     }
 
     xml2jsobject(data) {
@@ -46,10 +47,9 @@ class Utils {
                 return result
             })
             .catch(function (err) {
-                logger.error(err)
+                // logger.error(err)
             })
     }
-
     async request() {
         return await fetch('https://about.gitlab.com/atom.xml')
             .then((res) => res.text())
@@ -63,7 +63,7 @@ class Utils {
 
     debug(text) {
         if (this.debugMode == true) {
-            logger.debug(text)
+            // logger.debug(text)
         }
     }
 
@@ -74,15 +74,16 @@ class Utils {
         // find the index of the last item
         let needleIndex
         if (needle != '') {
-            logger.debug('getNewXMLentries: lastxml = ' + lastxml)
+            // logger.debug('getNewXMLentries: lastxml = ' + lastxml)
             needleIndex = haystack.findIndex((entry) => entry.id[0] == needle)
-            logger.debug('needleIndex is: ' + needleIndex)
+            // console.debug('needleIndex is: ' + needleIndex)
         } else {
-            logger.debug('getNewXMLentries: lastxml is empty')
+            // logger.debug('getNewXMLentries: lastxml is empty')
             needleIndex = 5
         }
         // create a new array with the new entries
         let newHaystack = haystack.slice(0, needleIndex)
+        // console.debug(newHaystack)
         return newHaystack
     }
     getTime() {
@@ -104,14 +105,25 @@ class Utils {
     async sendNews(chatID, bot, entries, nbr) {
         let iterations
 
-        logger.debug('nbr = ' + nbr)
-        if (typeof entries === 'undefined') {
-            logger.warn('sendNews: The array is empty')
+        console.debug('---------')
+        console.debug(chatID)
+        console.dir(bot)
+        console.dir(entries)
+        console.debug(nbr)
+        console.debug('---------')
+        if (entries.length == 0) {
+            console.log('tableeeaauu vide !!!');
+        }
+        // logger.debug('nbr = ' + nbr)
+        if (typeof entries === 'undefined' || entries.length == 0) {
+            // logger.warn('sendNews: The array is empty')
+            console.log('Invalide, on sort...')
             return
         }
         if (typeof nbr === 'undefined') {
+            console.log('nbr undefined');
             iterations = entries.length
-            logger.debug('entries.length = ' + entries.length)
+            // logger.debug('entries.length = ' + entries.length)
         } else if (nbr > entries.length) {
             iterations = entries.length
         } else {
@@ -150,18 +162,18 @@ class Utils {
                 text += '*' + entries[i].title[0] + '*' + '  [read more](' + entries[i].link[0].$.href + ')' + '\n\n'
             }
         } else {
-            logger.debug('sendNews: The nbr argument is negative')
+            // logger.debug('sendNews: The nbr argument is negative')
         }
         await bot.sendMessage(chatID, text, { parseMode: 'Markdown', webPreview: iterations == 1 ? true : false })
 
         if (entries.length == 0) {
             text = 'No recent results found\n'
-            bot.sendMessage(chatID, text)
+            await bot.sendMessage(chatID, text)
         } else if (entries.length < nbr) {
             text = entries.length + ' results found\n'
-            bot.sendMessage(chatID, text)
+            await bot.sendMessage(chatID, text)
         } else {
-            // logger.debug('Not good type')
+            logger.debug('Not good type')
         }
     }
 
@@ -187,13 +199,13 @@ class Utils {
                 this.lastxml = this.currentxml
             }
             updated = true
-            logger.debug('updatestart')
+            // logger.debug('updatestart')
         } else {
-            logger.debug(this.lastxml.feed.entry[0].id[0])
-            logger.debug(this.currentxml.feed.entry[0].id[0])
+            // logger.debug(this.lastxml.feed.entry[0].id[0])
+            // logger.debug(this.currentxml.feed.entry[0].id[0])
             if (this.lastxml.feed.entry[0].id[0] != this.currentxml.feed.entry[0].id[0]) {
                 updated = true
-                logger.debug('updated')
+                // logger.debug('updated')
             }
             if (this.debugMode == true) {
                 this.lastxml = require('./atom.json')
@@ -203,12 +215,13 @@ class Utils {
             this.currentxml = await this.request()
         }
         if (updated == true) {
-            logger.info('XML file has been updated ')
+            // logger.info('XML file has been updated ')
         }
         return this.currentxml, this.lastxml
     }
 
     async checkDifference(user, bot) {
+        console.log('------------------');
         for (const [key, value] of Object.entries(user)) {
             if (value.notify.idLastSend == '') {
                 this.forceCheck = true
@@ -219,65 +232,78 @@ class Utils {
             let compteur = 0
 
             for (const [chatKey, chatValue] of Object.entries(user)) {
-                let tmpNotifymode = chatValue.notify.notifyMode
-                let dayMonth = chatValue.notify.dayMonth
-                let notifyType = chatValue.notify.notifyType
-                let dayWeek = chatValue.notify.dayWeek
-                let dayHour = chatValue.notify.dayHour
-                let idLastSend = chatValue.notify.idLastSend
-                let chatID = chatKey
-                let chatInfos = await bot.getChat(chatID)
-                entries = await this.getNewXMLentries(this.currentxml, idLastSend)
-                logger.debug(entries)
-                logger.debug('+1')
-                if (notifyType != 'all') {
-                    let filteredArray = await this.getFiltered(notifyType, entries)
-                    if (filteredArray.length == 0) {
-                        logger.debug('No release found')
-                        tmpNotifymode = 'off'
-                    } else {
-                        entries = filteredArray
+                    // console.debug(compteur += 1)
+                    let tmpNotifymode = chatValue.notify.notifyMode
+                    let dayMonth = chatValue.notify.dayMonth
+                    let notifyType = chatValue.notify.notifyType
+                    let dayWeek = chatValue.notify.dayWeek
+                    let dayHour = chatValue.notify.dayHour
+                    let idLastSend = chatValue.notify.idLastSend
+                    let chatID = chatKey
+                    let chatInfos = await bot.getChat(chatID)
+                    entries = await this.getNewXMLentries(this.currentxml, idLastSend)
+                    // console.dir(entries)
+                    if (notifyType != 'all') {
+                        let filteredArray = await this.getFiltered(notifyType, entries)
+                        if (filteredArray.length == 0) {
+                            // logger.debug('No release found')
+                            tmpNotifymode = 'off'
+                        } else {
+                            entries = filteredArray
+                        }
                     }
-                }
-                switch (tmpNotifymode) {
-                    case 'auto':
-                        this.sendNews(chatID, bot, entries)
+                    switch (tmpNotifymode) {
+                        case 'auto':
+                        console.debug('---------- AUTO CASE ----------')
+                        await this.sendNews(chatID, bot, entries)
                         user.setIdLastSend(this.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                         break
-                    case 'daily':
+                        case 'daily':
+                        console.debug('---------- DAILY CASE ----------')
                         if (dayHour == this.getTime()) {
-                            this.sendNews(chatID, bot, entries)
+                            await this.sendNews(chatID, bot, entries)
                             user.setIdLastSend(this.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                         }
                         break
-                    case 'weekly':
-                        if (dayWeek == new Date().getDay() && dayHour == this.getTime()) {
-                            this.sendNews(chatID, bot, entries)
+                        case 'weekly':
+                        console.debug('---------- WEEKLY CASE ----------')
+                        console.log(`Jour de la semaine : ${this.dayWeekEnum[dayWeek]} et ${new Date().getDay()}`)
+                        console.log(`Types : ${typeof this.dayWeekEnum[dayWeek]} et ${typeof new Date().getDay()}`)
+                        if (this.dayWeekEnum[dayWeek] == new Date().getDay() && dayHour == this.getTime()) {
+                            console.debug('-------------------------------------------------------------')
+                            console.debug('entré dedans----------')
+                            await this.sendNews(chatID, bot, entries)
                             user.setIdLastSend(this.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                         }
                         break
-                    case 'monthly':
+                        case 'monthly':
+                        console.debug('---------- MONTHLY CASE ----------')
                         if (dayMonth == new Date().getDate() && dayHour == this.getTime()) {
-                            this.sendNews(chatID, bot, entries)
+                            await this.sendNews(chatID, bot, entries)
                             user.setIdLastSend(this.currentxml.feed.entry[0].id[0], chatInfos, chatInfos)
                         }
                         break
-                    case 'off':
+                        case 'off':
+                        console.debug('Usermode is off')
                         break
-                }
+                        default:
+                        console.log('Error: No match');
+                        break
+
+                    }
             }
         }
     }
 
     getUser(userInfos){
         if (typeof userInfos.username !== 'undefined') {
-            logger.debug('Display username')
+            // logger.debug('Display username')
             return userInfos.username
         } else if (typeof userInfos.first_name !== 'undefined' && typeof userInfos.last_name !== 'undefined'){
-            logger.debug('Display first_name and last_name')
+            // logger.debug('Display first_name and last_name')
             return userInfos.first_name + ' ' + userInfos.last_name
         } else {
-            logger.debug('Just display first_name')
+            // logger.debug('Just display first_name')
             return userInfos.first_name
         }
 
