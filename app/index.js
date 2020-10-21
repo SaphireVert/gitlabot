@@ -168,7 +168,7 @@ async function mainProgramm(){
         return /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/.test(hour)
     }
     const isDayMonthValid = (nbDay) => {
-        return /^([0-31])$/.test(nbDay)
+        return /^(([1-2]?[0-9])?([3]?[0-1])?)$/.test(nbDay)
     }
 
     const OKOKOK = `^\/notify(@${botName})? ?([a-zA-Z0-9_]*) ?([a-zA-Z0-9_]*) ?([a-zA-Z0-9_]*) ?([a-zA-Z0-9_]*)`
@@ -225,6 +225,7 @@ async function mainProgramm(){
                     user.setDayMonth('-', msg.from, msg.chat)
                     msg.reply.text(`Successfuly set to ${argument2}, ${weeklyArgDay}, ${weeklyArgHour} !`)
                 }
+                console.debug(isDayMonthValid(32))
                 // got monthly
                 if (argument2 == 'monthly') {
                     let monthlyArgDay = typeof argument3 !== 'undefined' && isDayMonthValid(argument3) ? argument3.toLowerCase() : '23'
