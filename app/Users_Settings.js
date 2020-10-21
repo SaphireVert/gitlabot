@@ -33,7 +33,6 @@ const TeleBot = require('telebot')
 const Utils = require('./Utils.js')
 const utils = new Utils(DEBUG_MODE)
 
-
 class Users_Settings {
     constructor(filePath) {
         this.importData(filePath)
@@ -99,11 +98,11 @@ class Users_Settings {
 
     async init(userInfos, chatInfos) {
         if (!this[userInfos.id]) {
-            logger.info(utils.getUser(userInfos) + ' ' + ((chatInfos.type == 'group') ? chatInfos.title : (chatInfos.type)) + ': Adding user')
+            logger.info(utils.getUser(userInfos) + ' ' + (chatInfos.type == 'group' ? chatInfos.title : chatInfos.type) + ': Adding user')
             await this.addUser(userInfos, chatInfos)
         }
         if (!this[chatInfos.id]) {
-            logger.info(utils.getUser(userInfos) + ' ' + ((chatInfos.type == 'group') ? chatInfos.title : (chatInfos.type)) + ': Adding group')
+            logger.info(utils.getUser(userInfos) + ' ' + (chatInfos.type == 'group' ? chatInfos.title : chatInfos.type) + ': Adding group')
             await this.addChat(userInfos, chatInfos)
         }
     }

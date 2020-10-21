@@ -1,4 +1,4 @@
-async function mainProgramm(){
+async function mainProgramm() {
     var secretsFile = require('./secrets.json')
     const BOT_TOKEN = secretsFile.BOT_TOKEN
     var tmpDebugMode = false
@@ -57,15 +57,7 @@ async function mainProgramm(){
 
     // afficher son pseudo, sinon prénom et nom, sinon nom
     bot.on([/^\/(.+)$/], async (msg, props) => {
-        logger.info(utils.getUser(msg.from) + ' ' + ((msg.chat.type == 'group') ? msg.chat.title : (msg.chat.type)) + ': Event detected: ' + msg.text)
-
-        var regextest = `/\b( + ${test} + )\b|\b(daily)\b/`
-        var lastTest = /\b(test)\b|\b(daily)\b/.test(props.match[0].toLowerCase())
-        if (lastTest) {
-            logger.debug(`Fonctionne: ${props.match[0]}`)
-        }
-        // logger.debug(`${props.match[0]}\n ${props.match[1]}\n ${props.match[2]}\n ${argument3}\n ${argument4}`)
-        // /\b(auto)\b|\b(daily)\b|\b(weekly)\b|\b(monthly)\b|\b(off)\b|\b(type)\b|\b(mode)\b/
+        logger.info(utils.getUser(msg.from) + ' ' + (msg.chat.type == 'group' ? msg.chat.title : msg.chat.type) + ': Event detected: ' + msg.text)
     })
 
     bot.on(new RegExp(`^\/start(@${botName})?$`), (msg) => {
@@ -105,22 +97,16 @@ async function mainProgramm(){
         if (DEBUG_MODE) {
             table.addRow('idLastSend', user[msg.chat.id].notify.idLastSend == '' ? 'empty' : 'existing')
         }
-
         let tableString = table.toString()
         tableString = '`' + tableString + '`'
-
         msg.reply.text(tableString, { parseMode: 'Markdown' })
     })
 
-
     bot.on(new RegExp(`(^\/last)(@${botName})?\s?(.+)?$`), async (msg, props) => {
         var nbPage = Number(props.match[3])
-        console.debug(props)
         if (typeof nbPage === 'undefined' || typeof nbPage !== 'number' || Number(nbPage <= 1)) {
-            logger.debug('entré')
             nbPage = 1
         }
-        logger.debug(nbPage)
         try {
             let test = utils.lastxml.feed.entry
         } catch (error) {
@@ -132,9 +118,7 @@ async function mainProgramm(){
                 nbPage = utils.currentxml.feed.entry.length
                 yesOrNo = true
             }
-
             utils.sendNews(msg.chat.id, bot, utils.currentxml.feed.entry, nbPage)
-
             if (yesOrNo == true) {
                 let text = utils.currentxml.feed.entry.length + ' results founds\n'
                 msg.reply.text(text)
@@ -171,11 +155,8 @@ async function mainProgramm(){
         return /^(([1-2]?[0-9])?([3]?[0-1])?)$/.test(nbDay)
     }
 
-    const OKOKOK = `^\/notify(@${botName})? ?([a-zA-Z0-9_]*) ?([a-zA-Z0-9_]*) ?([a-zA-Z0-9_]*) ?([a-zA-Z0-9_]*)`
-    const saphireTest = `^\/notify(@${botName})? ?(mode|type)? ?(auto|daily|weekly|monthly|off|all|release)? ?([a-zA-Z0-9_:]*)? ?([a-zA-Z0-9_:]*)?`
-    const saphireTestorigin = `^\/notify(@${botName})?\s?(.+)?\s?(.+)?$`
-    //bot.on(new RegExp(`^\/notify\s?(\w*)`), async (msg, props) => {
-    bot.on(new RegExp(saphireTest), async (msg, props) => {
+    const notifyRegex = `^\/notify(@${botName})? ?(mode|type)? ?(auto|daily|weekly|monthly|off|all|release)? ?([a-zA-Z0-9_:]*)? ?([a-zA-Z0-9_:]*)?`
+    bot.on(new RegExp(notifyRegex), async (msg, props) => {
         user.init(msg.from, msg.chat)
 
         var modeOrType = props.match[2]
@@ -183,10 +164,8 @@ async function mainProgramm(){
         var argument3 = props.match[4]
         var argument4 = props.match[5]
 
-        logger.debug(modeOrType)
         if (typeof modeOrType !== 'undefined' && validateNotifyMode(modeOrType)) {
             if (modeOrType == 'type') {
-                logger.debug(isNotifyTypeValid(argument2))
                 let notifyTypeArg = typeof argument2 !== 'undefined' && isNotifyTypeValid(argument2) ? argument2 : 'all'
                 user.setNotifyType(notifyTypeArg, msg.from, msg.chat, bot)
                 msg.reply.text('Successfuly set to ' + notifyTypeArg + ' !')
@@ -204,7 +183,6 @@ async function mainProgramm(){
 
                 // got  daily (or weekly, monthly)
                 if (argument2 == 'daily') {
-                    // TODO: handle non-valid hours argument
                     let dailyArg = typeof argument3 !== 'undefined' && isHourValid(argument3) ? argument3 : '08:00'
                     user.setNotifyMode(argument2, msg.from, msg.chat)
                     user.setDayHour(dailyArg, msg.from, msg.chat)
@@ -215,17 +193,14 @@ async function mainProgramm(){
 
                 // got weekly
                 if (argument2 == 'weekly') {
-                    logger.debug(argument4)
                     let weeklyArgDay = typeof argument3 !== 'undefined' && isDayValid(argument3) ? argument3.toLowerCase() : 'monday'
                     let weeklyArgHour = typeof argument4 !== 'undefined' && isHourValid(argument4) ? argument4 : '08:00'
                     user.setNotifyMode(argument2, msg.from, msg.chat)
-                    logger.debug(weeklyArgHour)
                     user.setDayHour(weeklyArgHour, msg.from, msg.chat)
                     user.setDayWeek(weeklyArgDay, msg.from, msg.chat)
                     user.setDayMonth('-', msg.from, msg.chat)
                     msg.reply.text(`Successfuly set to ${argument2}, ${weeklyArgDay}, ${weeklyArgHour} !`)
                 }
-                console.debug(isDayMonthValid(32))
                 // got monthly
                 if (argument2 == 'monthly') {
                     let monthlyArgDay = typeof argument3 !== 'undefined' && isDayMonthValid(argument3) ? argument3.toLowerCase() : '23'
@@ -260,12 +235,12 @@ async function mainProgramm(){
     async function initXML() {
         await utils.updateXML()
         cron.schedule('* * * * *', async () => {
-                if (new Date().getMinutes() % 5 == 0) {
-                    await utils.updateXML()
-                    await utils.checkDifference(user, bot)
-                } else {
-                    await utils.checkDifference(user, bot)
-                }
+            if (new Date().getMinutes() % 5 == 0) {
+                await utils.updateXML()
+                await utils.checkDifference(user, bot)
+            } else {
+                await utils.checkDifference(user, bot)
+            }
         })
     }
 
@@ -273,19 +248,7 @@ async function mainProgramm(){
     bot.start()
 
     if (DEBUG_MODE) {
-        bot.on('/test', async (msg) => {
-
-            // let replyMarkup = bot.keyboard([
-            //     [bot.button('contact', 'Your contact'), bot.button('location', 'Your location')],
-            //     ['/back', '/hide']
-            // ], {resize: true});
-            //
-            // return bot.sendMessage(msg.from.id, 'Button example.', {replyMarkup});
-            //
-            // bot.on('*', async (msg) => {
-            //
-            // })
-        })
+        bot.on('/test', async (msg) => {})
     }
 
     if (DEBUG_MODE) {
@@ -297,6 +260,5 @@ async function mainProgramm(){
             msg.reply.text('Configuration reset successfuly! Type /settings to see the values')
         })
     }
-
 }
 mainProgramm()
