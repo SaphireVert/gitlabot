@@ -144,16 +144,12 @@ async function mainProgramm(){
             await msg.reply.text(text)
         }
     })
-    bot.on([new RegExp(`^\/release(@${botName})?$`), /^\/release (.+)$/], async (msg, props) => {
-        var nbPage
-        if (typeof props.match[1] === 'undefined') {
+    bot.on(new RegExp(`(^\/release)(@${botName})?\s?(.+)?$`), async (msg, props) => {
+        if (typeof props.match[3] === 'undefined') {
             nbPage = 1
-        } else if (props.match[1] == 'all') {
-            nbPage = utils.currentxml.feed.entry.length
         } else {
-            nbPage = Number(props.match[1])
+            var nbPage = Number(props.match[3])
         }
-
         utils.sendNews(msg.chat.id, bot, await utils.getFiltered('release', utils.currentxml.feed.entry), nbPage)
     })
 
