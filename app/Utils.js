@@ -94,12 +94,9 @@ class Utils {
     async sendNews(chatID, bot, entries, nbr) {
         let iterations
 
-        console.dir(bot)
-        console.dir(entries)
         if (entries.length == 0) {
         }
         if (typeof entries === 'undefined' || entries.length == 0) {
-            // logger.warn('sendNews: The array is empty')
             return
         }
         if (typeof nbr === 'undefined') {
