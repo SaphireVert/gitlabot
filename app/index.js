@@ -89,8 +89,8 @@ async function mainProgramm() {
         user.init(msg.from, msg.chat)
         var table = new AsciiTable('Settings')
         table
-            .addRow('Notification mode', user[msg.chat.id].notify.notifyMode)
-            .addRow('Notification type', user[msg.chat.id].notify.notifyType)
+            .addRow('Notification mode', user[msg.chat.id].notify.notifyMode == '' ? '-' : user[msg.chat.id].notify.notifyMode)
+            .addRow('Notification type', user[msg.chat.id].notify.notifyType == '' ? '-' : user[msg.chat.id].notify.notifyType)
             .addRow('Day time', user[msg.chat.id].notify.dayHour == '' ? '-' : user[msg.chat.id].notify.dayHour)
             .addRow('Week day', user[msg.chat.id].notify.dayWeek == '' ? '-' : user[msg.chat.id].notify.dayWeek)
             .addRow('Month day', user[msg.chat.id].notify.dayMonth == '' ? '-' : user[msg.chat.id].notify.dayMonth)
@@ -103,8 +103,8 @@ async function mainProgramm() {
     })
 
     bot.on(new RegExp(`(^\/last)(@${botName})?\s?(.+)?$`), async (msg, props) => {
-        var nbPage = Number(props.match[3])
-        if (typeof nbPage === 'undefined' || typeof nbPage !== 'number' || Number(nbPage <= 1)) {
+        var nbPage = props.match[3]
+        if (typeof props.match[3] === 'undefined' || Number(props.match[3]) <= 1 || props.match[3] === 'NaN') {
             nbPage = 1
         }
         try {
@@ -176,8 +176,9 @@ async function mainProgramm() {
                 // get mode = off, auto, daily, weekly, monthly
                 if (argument2 == 'off' || argument2 == 'auto') {
                     user.setNotifyMode(argument2, msg.from, msg.chat)
-                    user.setDayMonth('-', msg.from, msg.chat)
-                    user.setDayWeek('-', msg.from, msg.chat)
+                    user.setDayHour('', msg.from, msg.chat)
+                    user.setDayMonth('', msg.from, msg.chat)
+                    user.setDayWeek('', msg.from, msg.chat)
                     msg.reply.text('Successfuly set to ' + argument2 + ' !')
                 }
 
@@ -186,8 +187,8 @@ async function mainProgramm() {
                     let dailyArg = typeof argument3 !== 'undefined' && isHourValid(argument3) ? argument3 : '08:00'
                     user.setNotifyMode(argument2, msg.from, msg.chat)
                     user.setDayHour(dailyArg, msg.from, msg.chat)
-                    user.setDayMonth('-', msg.from, msg.chat)
-                    user.setDayWeek('-', msg.from, msg.chat)
+                    user.setDayMonth('', msg.from, msg.chat)
+                    user.setDayWeek('', msg.from, msg.chat)
                     msg.reply.text(`Successfuly set to ${argument2}, ${dailyArg} !`)
                 }
 
@@ -198,7 +199,7 @@ async function mainProgramm() {
                     user.setNotifyMode(argument2, msg.from, msg.chat)
                     user.setDayHour(weeklyArgHour, msg.from, msg.chat)
                     user.setDayWeek(weeklyArgDay, msg.from, msg.chat)
-                    user.setDayMonth('-', msg.from, msg.chat)
+                    user.setDayMonth('', msg.from, msg.chat)
                     msg.reply.text(`Successfuly set to ${argument2}, ${weeklyArgDay}, ${weeklyArgHour} !`)
                 }
                 // got monthly
@@ -208,7 +209,7 @@ async function mainProgramm() {
                     user.setNotifyMode(argument2, msg.from, msg.chat)
                     user.setDayHour(monthlyArgHour, msg.from, msg.chat)
                     user.setDayMonth(monthlyArgDay, msg.from, msg.chat)
-                    user.setDayWeek('-', msg.from, msg.chat)
+                    user.setDayWeek('', msg.from, msg.chat)
                     msg.reply.text(`Successfuly set to ${argument2}, ${monthlyArgDay}, ${monthlyArgHour} !`)
                 }
             }
@@ -253,9 +254,9 @@ async function mainProgramm() {
 
     if (DEBUG_MODE) {
         bot.on([/^\/reset$/], async (msg, props) => {
-            user.reset(msg.from, msg.chat)
-            user.setNotifyMode('auto', msg.from, msg.chat)
-            user.setNotifyType('all', msg.from, msg.chat)
+            // user.reset(msg.from, msg.chat)
+            // user.setNotifyMode('auto', msg.from, msg.chat)
+            // user.setNotifyType('all', msg.from, msg.chat)
             user.setIdLastSend('', msg.from, msg.chat)
             msg.reply.text('Configuration reset successfuly! Type /settings to see the values')
         })

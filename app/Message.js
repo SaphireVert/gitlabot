@@ -30,13 +30,13 @@ class Message extends TeleBot {
         super(cfg)
     }
 
-    on(types, fn, opt) {
-        super.on(types, fn, opt)
-    }
-
-    event(types, data, self) {
-        return super.event(types, data, self)
-    }
+    // on(types, fn, opt) {
+    //     super.on(types, fn, opt)
+    // }
+    //
+    // event(types, data, self) {
+    //     return super.event(types, data, self)
+    // }
 }
 
 module.exports = Message
