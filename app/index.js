@@ -177,8 +177,8 @@ async function mainProgramm() {
                 if (argument2 == 'off' || argument2 == 'auto') {
                     user.setNotifyMode(argument2, msg.from, msg.chat)
                     user.setDayHour('', msg.from, msg.chat)
-                    user.setDayMonth('', msg.from, msg.chat)
                     user.setDayWeek('', msg.from, msg.chat)
+                    user.setDayMonth('', msg.from, msg.chat)
                     msg.reply.text('Successfuly set to ' + argument2 + ' !')
                 }
 
@@ -187,8 +187,8 @@ async function mainProgramm() {
                     let dailyArg = typeof argument3 !== 'undefined' && isHourValid(argument3) ? argument3 : '08:00'
                     user.setNotifyMode(argument2, msg.from, msg.chat)
                     user.setDayHour(dailyArg, msg.from, msg.chat)
-                    user.setDayMonth('', msg.from, msg.chat)
                     user.setDayWeek('', msg.from, msg.chat)
+                    user.setDayMonth('', msg.from, msg.chat)
                     msg.reply.text(`Successfuly set to ${argument2}, ${dailyArg} !`)
                 }
 
